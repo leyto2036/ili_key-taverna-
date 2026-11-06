@@ -8,17 +8,20 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
 </head>
-<body>
+<body data-theme="light">
 
     <!-- Навигация -->
     <nav class="navbar navbar-dark bg-dark px-3 py-3 sticky-top">
         <div class="container-fluid d-flex justify-content-between align-items-center">
             <a class="navbar-brand fw-bold fs-5" href="#"><i class="fas fa-utensils text-warning me-2"></i>Taverna Yamas</a>
             <div class="d-flex align-items-center gap-3">
-                <div class="lang-switch fs-6">
-                    <a href="/set_language/de" class="{% if current_lang == 'de' %}active{% endif %}">DE</a> |
-                    <a href="/set_language/en" class="{% if current_lang == 'en' %}active{% endif %}">EN</a> |
-                    <a href="/set_language/ru" class="{% if current_lang == 'ru' %}active{% endif %}">RU</a>
+                <button class="btn btn-link text-warning fs-5 p-0 text-decoration-none" onclick="toggleTheme()" title="День / Ночь">
+                    <i class="fas fa-lightbulb" id="themeIcon"></i>
+                </button>
+                <div class="lang-switch fs-6 text-white">
+                    <a href="/set_language/de" class="text-decoration-none {% if current_lang == 'de' %}fw-bold text-warning{% else %}text-white{% endif %}">DE</a> |
+                    <a href="/set_language/en" class="text-decoration-none {% if current_lang == 'en' %}fw-bold text-warning{% else %}text-white{% endif %}">EN</a> |
+                    <a href="/set_language/ru" class="text-decoration-none {% if current_lang == 'ru' %}fw-bold text-warning{% else %}text-white{% endif %}">RU</a>
                 </div>
                 <button class="btn btn-outline-warning btn-sm" type="button" data-bs-toggle="offcanvas" data-bs-target="#sidebar">
                     <i class="fas fa-bars fs-5"></i>
@@ -27,13 +30,13 @@
         </div>
     </nav>
 
-    <!-- Шапка с кнопками настройки фонового изображения -->
+    <!-- Шапка -->
     <header class="hero" id="heroHeader">
-        <div class="hero-controls">
-            <button class="hero-btn" title="Изменить режим подгонки фона" onclick="toggleHeroFit()">
+        <div class="hero-controls edit-tool">
+            <button class="hero-btn" title="Изменить режим фона" onclick="toggleHeroFit()">
                 <i class="fas fa-expand"></i>
             </button>
-            <label class="hero-btn" title="Сменить заставку (Загрузить фото с камеры)">
+            <label class="hero-btn" title="Сменить заставку">
                 <i class="fas fa-pencil-alt"></i>
                 <input type="file" hidden onchange="updateHeroBg(event)">
             </label>
@@ -47,9 +50,12 @@
             <h1 class="display-3 fw-bold mb-2">Taverna Yamas</h1>
             <p class="lead mb-3 text-light px-2">{{ t.subtitle }}</p>
 
-            <div class="mb-4">
+            <div class="mb-4 d-flex align-items-center justify-content-center gap-2">
                 <button class="btn btn-outline-warning px-4 py-2 fw-bold rounded-pill shadow-sm" data-bs-toggle="modal" data-bs-target="#tablesModal">
-                    {{ t.tables_btn }}
+                    <span id="tablesBadgeText">{{ t.tables_btn }}</span>
+                </button>
+                <button class="btn btn-sm btn-outline-light rounded-circle edit-tool" data-bs-toggle="modal" data-bs-target="#editTablesModal" title="{{ t.tables_edit }}">
+                    <i class="fas fa-pen"></i>
                 </button>
             </div>
 
@@ -59,90 +65,82 @@
         </div>
     </header>
 
-    <!-- Главный блок: Описание и Выдвижное Меню в две колонки -->
+    <!-- Главный блок: по умолчанию левая колонка на всю ширину, правая с блюдами скрыта до клика -->
     <section class="container my-5 py-2">
-        <div class="row g-4 align-items-start">
-            
-            <!-- Левая колонка: Описание заведения и область подвижных блоков -->
-            <div class="col-lg-6">
+        <div class="row g-4 align-items-start" id="mainRow">
+
+            <!-- Левая колонка (при старте col-lg-12, после клика становится col-lg-6) -->
+            <div class="col-lg-12 transition-all" id="leftColumn">
                 <h2 class="fw-bold mb-3">{{ t.about_title }}</h2>
-                <div class="d-flex gap-2 mb-4">
-                    <button class="btn btn-dark btn-lg px-4 fw-bold shadow flex-grow-1" type="button" data-bs-toggle="collapse" data-bs-target="#menuSection">
+                <div class="d-flex gap-2 mb-4 flex-wrap">
+                    <!-- Кнопка открытия меню сдвигает блок влево -->
+                    <button class="btn btn-dark btn-lg px-4 fw-bold shadow" type="button" onclick="toggleMenuColumn()">
                         <i class="fas fa-utensils me-2 text-warning"></i> {{ t.menu_btn }}
                     </button>
-                    <!-- Кнопка добавления описания/фото -->
-                    <button class="btn btn-outline-primary fw-bold shadow-sm px-3" onclick="addMovableBlock()" title="Добавить блок описания с фото">
-                        <i class="fas fa-plus me-1"></i> Блок
+                    <!-- Кнопка для фото оригинального меню -->
+                    <button class="btn btn-outline-warning btn-lg px-4 fw-bold shadow" type="button" data-bs-toggle="modal" data-bs-target="#menuGalleryModal">
+                        <i class="fas fa-book-open me-2"></i> {{ t.menu_photos_btn }}
+                    </button>
+                    <button class="btn btn-outline-primary fw-bold shadow-sm px-3 edit-tool" onclick="addMovableBlock()" title="Добавить блок описания с фото">
+                        <i class="fas fa-plus me-1"></i> {{ t.block_btn }}
                     </button>
                 </div>
-                
+
                 <p class="text-muted lh-lg mb-3">{{ t.about_text }}</p>
 
-                <!-- Зона для перемещаемых блоков описания и фотографий -->
                 <div id="customDescriptionArea">
-                    <p class="text-muted small text-center mb-0"><i class="fas fa-info-circle me-1"></i> Нажимайте кнопку «+ Блок», чтобы добавлять текст и фото, и перетаскивайте их мышкой по этой области.</p>
+                    <p class="text-muted small mb-0 edit-tool"><i class="fas fa-info-circle me-1"></i> Нажимайте «+ Блок», добавляйте текст и фото, перетаскивайте и нажимайте «Сохранить».</p>
                 </div>
+
+                <div id="savedBlocksContainer" class="mt-4"></div>
             </div>
 
-            <!-- Правая колонка: Меню (выезжает справа) с настройкой размера карточек -->
-            <div class="col-lg-6 collapse" id="menuSection">
-                <div class="bg-white p-3 p-md-4 rounded-4 shadow-sm">
+            <!-- Правая колонка с блюдами (изначально скрыта, появляется по клику) -->
+            <div class="col-lg-6 d-none" id="menuSection">
+                <div class="bg-white p-3 p-md-4 rounded-4 shadow-sm text-dark">
                     <div class="d-flex justify-content-between align-items-center mb-4">
                         <h3 class="fw-bold m-0">{{ t.menu_title }}</h3>
-                        <!-- Кнопки настройки размера карточек -->
-                        <div class="btn-group btn-group-sm">
-                            <button class="btn btn-outline-secondary" onclick="adjustCardSize(-20)" title="Уменьшить карточки">-</button>
-                            <button class="btn btn-outline-secondary" onclick="adjustCardSize(20)" title="Увеличить карточки">+</button>
-                        </div>
+                        <button class="btn btn-sm btn-outline-dark" onclick="toggleMenuColumn()"><i class="fas fa-times"></i></button>
                     </div>
 
-                    <div class="row">
+                    <div class="row g-3" style="max-height: 650px; overflow-y: auto;">
                         {% for item in menu %}
                         <div class="col-12 col-md-6 scene">
                             <div class="card-flip" id="card-{{ item.id }}" onclick="flipCard(event, this)">
-                                
                                 <div class="card-face card-front">
                                     <div class="position-relative">
-                                        <img src="{{ item.img }}" alt="{{ item.name }}" id="img-view-{{ item.id }}">
-                                        <label class="btn btn-sm btn-dark position-absolute bottom-0 end-0 m-2 rounded-circle shadow" title="Сменить фото" onclick="event.stopPropagation();">
+                                        <img src="{{ item.img }}" alt="{{ item.name }}" id="img-view-{{ item.id }}" style="height: 160px; object-fit: cover; width: 100%;">
+                                        <label class="btn btn-sm btn-dark position-absolute bottom-0 end-0 m-2 rounded-circle shadow edit-tool" title="Сменить фото" onclick="event.stopPropagation();">
                                             <i class="fas fa-camera"></i>
                                             <input type="file" hidden onchange="updateImage(event, '{{ item.id }}')">
                                         </label>
                                     </div>
-                                    <div class="card-front-body">
-                                        <input type="text" class="editable-input-front" value="{{ item.name }}" id="front-name-{{ item.id }}" oninput="syncName('{{ item.id }}')" onclick="event.stopPropagation();">
-                                        <span class="price-badge" id="front-price-{{ item.id }}">{{ item.price }}</span>
+                                    <div class="card-front-body p-2">
+                                        <input type="text" class="editable-input-front fw-bold border-0 bg-transparent w-100" value="{{ item.name }}" id="front-name-{{ item.id }}" oninput="syncName('{{ item.id }}')" onclick="event.stopPropagation();">
+                                        <span class="price-badge text-danger fw-bold" id="front-price-{{ item.id }}">{{ item.price }}</span>
                                     </div>
-                                    <div class="px-3 pb-2">
+                                    <div class="px-2 pb-2">
                                         <button class="btn btn-success btn-sm w-100 fw-bold" onclick="event.stopPropagation(); addToCart('{{ item.name }}', '{{ item.price }}')">
                                             <i class="fas fa-cart-plus me-1"></i> {{ t.to_order }}
                                         </button>
                                     </div>
                                 </div>
-
-                                <div class="card-face card-back">
+                                <div class="card-face card-back p-3 bg-dark text-white">
                                     <div onclick="event.stopPropagation();">
-                                        <div class="d-flex justify-content-between align-items-center mb-1">
-                                            <small class="text-warning"><i class="fas fa-pen me-1"></i> Редактирование</small>
-                                            <span class="badge bg-secondary" style="font-size: 0.7rem;">ID: {{ item.id }}</span>
-                                        </div>
-                                        <input type="text" class="editable-input mb-2 fw-bold" value="{{ item.name }}" id="back-name-{{ item.id }}" oninput="syncFrontName('{{ item.id }}')">
-                                        <textarea class="editable-input mb-2" rows="2" id="back-desc-{{ item.id }}">{{ item.desc }}</textarea>
-                                        <div class="input-group input-group-sm mb-1">
-                                            <span class="input-group-text bg-dark text-white border-secondary">€</span>
-                                            <input type="text" class="editable-input" value="{{ item.price }}" id="back-price-{{ item.id }}" oninput="syncPrice('{{ item.id }}')">
-                                        </div>
+                                        <small class="text-warning"><i class="fas fa-pen me-1"></i> Редактирование</small>
+                                        <input type="text" class="form-control form-control-sm mb-2 fw-bold" value="{{ item.name }}" id="back-name-{{ item.id }}" oninput="syncFrontName('{{ item.id }}')">
+                                        <textarea class="form-control form-control-sm mb-2" rows="2" id="back-desc-{{ item.id }}">{{ item.desc }}</textarea>
+                                        <input type="text" class="form-control form-control-sm mb-2" value="{{ item.price }}" id="back-price-{{ item.id }}" oninput="syncPrice('{{ item.id }}')">
                                     </div>
                                     <div onclick="event.stopPropagation();">
                                         <button class="btn btn-warning btn-sm w-100 fw-bold text-dark mb-1" onclick="addToCartFromBack('{{ item.id }}')">
                                             <i class="fas fa-cart-plus me-1"></i> {{ t.to_order }}
                                         </button>
-                                        <button class="btn btn-outline-light btn-sm w-100 py-1" style="font-size: 0.8rem;" onclick="document.getElementById('card-{{ item.id }}').classList.remove('flipped');">
+                                        <button class="btn btn-outline-light btn-sm w-100 py-1" onclick="document.getElementById('card-{{ item.id }}').classList.remove('flipped');">
                                             <i class="fas fa-arrow-left me-1"></i> {{ t.back_to_menu }}
                                         </button>
                                     </div>
                                 </div>
-
                             </div>
                         </div>
                         {% endfor %}
@@ -153,9 +151,91 @@
         </div>
     </section>
 
-    <!-- Плавающий блок справа снизу: Телефон + Корзина -->
+    <!-- Галерея интерьера -->
+    <section class="container my-5 py-4 border-top" id="gallerySection">
+        <div class="text-center mb-4">
+            <h2 class="fw-bold">Atmosphäre & Eindrücke</h2>
+            <p class="text-muted">Ein kleiner Einblick in unsere Taverna</p>
+        </div>
+        <div class="row g-4">
+            <div class="col-md-6">
+                <div class="card border-0 shadow-sm rounded-4 overflow-hidden">
+                    <img src="/static/images/bg/photo_2026-04-27_14-07-53.jpg" class="card-img-top" style="height: 280px; object-fit: cover;" alt="Innenbereich">
+                    <div class="card-body bg-light text-dark">
+                        <h5 class="fw-bold mb-1">Gemütlicher Innenraum</h5>
+                        <p class="text-muted small mb-0">Genießen Sie authentische griechische Atmosphäre im Herzen von München.</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="card border-0 shadow-sm rounded-4 overflow-hidden">
+                    <img src="/static/images/bg/photo_2026-04-27_14-07-47 (2).jpg" class="card-img-top" style="height: 280px; object-fit: cover;" alt="Sommerterrasse">
+                    <div class="card-body bg-light text-dark">
+                        <h5 class="fw-bold mb-1">Sommerterrasse</h5>
+                        <p class="text-muted small mb-0">Verweilen Sie an sonnigen Tagen auf unserer einladenden Außenterrasse.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Модальное окно галереи страниц меню -->
+    <div class="modal fade" id="menuGalleryModal" tabindex="-1">
+        <div class="modal-dialog modal-lg modal-dialog-centered">
+            <div class="modal-content rounded-4 border-0 p-4 bg-dark text-white">
+                <div class="modal-header border-0 pb-0">
+                    <h5 class="modal-title fw-bold text-warning"><i class="fas fa-book-open me-2"></i>Original Speisekarte</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body text-center">
+                    <div id="menuCarousel" class="carousel slide" data-bs-ride="false">
+                        <div class="carousel-inner rounded-4 overflow-hidden shadow">
+                            {% for img_url in menu_images %}
+                            <div class="carousel-item {% if loop.first %}active{% endif %}">
+                                <img src="{{ img_url }}" class="d-block w-100" style="max-height: 75vh; object-fit: contain; background: #000;" alt="Speisekarte Seite">
+                            </div>
+                            {% endfor %}
+                        </div>
+                        <button class="carousel-control-prev" type="button" data-bs-target="#menuCarousel" data-bs-slide="prev">
+                            <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                            <span class="visually-hidden">Previous</span>
+                        </button>
+                        <button class="carousel-control-next" type="button" data-bs-target="#menuCarousel" data-bs-slide="next">
+                            <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                            <span class="visually-hidden">Next</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Модальное окно редактора мест -->
+    <div class="modal fade" id="editTablesModal" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content rounded-4 border-0 p-4">
+                <div class="modal-header border-0 pb-0">
+                    <h5 class="modal-title fw-bold text-dark"><i class="fas fa-chair text-warning me-2"></i>Изменить количество мест</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label small fw-bold">Свободных мест в зале (из 10)</label>
+                        <input type="number" class="form-control" id="inputIndoorFree" min="0" max="10" value="5">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label small fw-bold">Свободных мест на террасе (из 10)</label>
+                        <input type="number" class="form-control" id="inputTerraceFree" min="0" max="10" value="5">
+                    </div>
+                    <button class="btn btn-warning w-100 fw-bold text-dark" onclick="saveTableSeats()">Сохранить места</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Плавающая корзина -->
     <div class="floating-container">
-        <a href="{{ links.phone }}" class="floating-phone-btn" title="Связаться с заведением">
+        <a href="{{ links.phone }}" class="floating-phone-btn" title="Связаться">
             <i class="fas fa-phone-alt"></i>
         </a>
         <a href="#" class="floating-cart-btn" data-bs-toggle="modal" data-bs-target="#cartModal">
@@ -164,7 +244,7 @@
         </a>
     </div>
 
-    <!-- Модальное окно Корзины -->
+    <!-- Корзина модальное -->
     <div class="modal fade" id="cartModal" tabindex="-1">
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content rounded-4 border-0 p-4">
@@ -186,7 +266,7 @@
         </div>
     </div>
 
-    <!-- Модальное окно Бронирования Столиков -->
+    <!-- Бронирование -->
     <div class="modal fade" id="tablesModal" tabindex="-1">
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content rounded-4 border-0 p-4">
@@ -196,7 +276,7 @@
                 </div>
                 <div class="modal-body">
                     <div class="alert alert-success small mb-3">
-                        <i class="fas fa-info-circle me-1"></i> {{ t.tables_info }}
+                        <i class="fas fa-info-circle me-1"></i> <span id="modalTablesInfoText">{{ t.tables_info }}</span>
                     </div>
                     <form onsubmit="reserveTable(event)">
                         <div class="mb-3">
@@ -218,7 +298,7 @@
         </div>
     </div>
 
-    <!-- Модальное окно Заказа и Доставки -->
+    <!-- Заказ -->
     <div class="modal fade" id="orderModal" tabindex="-1">
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content rounded-4 border-0 p-3">
@@ -227,74 +307,44 @@
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body text-center">
-                    
                     <a href="{{ links.phone }}" class="btn-pickup mb-4">
                         <div class="fs-5"><i class="fas fa-box me-2"></i>{{ t.pickup_title }}</div>
                         <small class="fw-normal opacity-75 d-block mt-1">{{ t.pickup_sub }}</small>
                     </a>
-
                     <div class="text-muted small mb-3">{{ t.partners_title }}</div>
-
                     <div class="d-flex flex-column gap-2 mb-4">
-                        <a href="{{ links.lieferando }}" target="_blank" class="btn-lieferando" onclick="copyCartToClipboard()">
-                            <i class="fas fa-utensils me-2"></i>Lieferando
-                        </a>
-                        <a href="{{ links.wolt }}" target="_blank" class="btn-wolt" onclick="copyCartToClipboard()">
-                            <i class="fas fa-motorcycle me-2"></i>Wolt
-                        </a>
-                        <a href="{{ links.uber }}" target="_blank" class="btn-uber" onclick="copyCartToClipboard()">
-                            <i class="fas fa-car me-2"></i>Uber Eats
-                            <div class="text-warning small" style="font-size: 0.75rem;">Код: {{ links.uber_code }}</div>
-                        </a>
+                        <a href="{{ links.lieferando }}" target="_blank" class="btn-lieferando" onclick="copyCartToClipboard()">Lieferando</a>
+                        <a href="{{ links.wolt }}" target="_blank" class="btn-wolt" onclick="copyCartToClipboard()">Wolt</a>
+                        <a href="{{ links.uber }}" target="_blank" class="btn-uber" onclick="copyCartToClipboard()">Uber Eats <div class="text-warning small">Код: {{ links.uber_code }}</div></a>
                     </div>
-
-                    <div class="p-3 bg-light rounded-3 text-start border">
-                        <h6 class="fw-bold mb-2"><i class="fas fa-circle-info text-primary me-2"></i>{{ t.delivery_info }}</h6>
-                        <div class="d-flex justify-content-between small mb-1">
-                            <span>{{ t.del_time }}</span> <strong>~40 {{ t.min_unit }}</strong>
-                        </div>
-                        <div class="d-flex justify-content-between small mb-1">
-                            <span>{{ t.min_order }}</span> <strong>10,00 €</strong>
-                        </div>
-                        <div class="d-flex justify-content-between small">
-                            <span>{{ t.del_cost }}</span> <strong>0,99 €</strong>
-                        </div>
-                    </div>
-
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- Выезжающая шторка справа -->
+    <!-- Выезжающая шторка с Impressum -->
     <div class="offcanvas offcanvas-end offcanvas-dark" tabindex="-1" id="sidebar">
         <div class="offcanvas-header border-bottom border-secondary">
             <h5 class="offcanvas-title fw-bold text-warning"><i class="fas fa-utensils me-2"></i>{{ t.sidebar_header }}</h5>
             <button type="button" class="btn-close btn-close-white" data-bs-dismiss="offcanvas"></button>
         </div>
         <div class="offcanvas-body">
-            
+            <div class="mb-4">
+                <button class="btn btn-outline-warning btn-sm w-100 fw-bold py-2" onclick="toggleEditorTools()">
+                    <i class="fas fa-tools me-2"></i> <span id="toggleToolsLabel">{{ t.toggle_tools }}</span>
+                </button>
+            </div>
             <div class="mb-4">
                 <h6 class="text-warning fw-bold"><i class="fas fa-door-open me-2"></i>{{ t.hours_title }}</h6>
                 <p class="small text-white mb-1"><strong>{{ t.hours_mon }}</strong></p>
                 <p class="small text-white mb-1"><strong>{{ t.hours_tue }}</strong></p>
                 <p class="small text-white mb-0"><strong>{{ t.hours_fri }}</strong></p>
             </div>
-
             <div class="mb-4">
                 <h6 class="text-warning fw-bold"><i class="fas fa-phone me-2"></i>{{ t.contact_venue }}</h6>
                 <a href="{{ links.phone }}" class="btn btn-outline-light btn-sm w-100 text-start mb-2"><i class="fas fa-phone me-2"></i>089 4483787</a>
             </div>
-
-            <div class="mb-4">
-                <h6 class="text-warning fw-bold"><i class="fas fa-code me-2"></i>{{ t.contact_dev }}</h6>
-                <div class="d-flex gap-2">
-                    <a href="https://wa.me/" target="_blank" class="btn btn-success btn-sm"><i class="fab fa-whatsapp"></i></a>
-                    <a href="https://t.me/" target="_blank" class="btn btn-primary btn-sm"><i class="fab fa-telegram"></i></a>
-                    <a href="mailto:support@yamas.de" class="btn btn-danger btn-sm"><i class="fas fa-envelope"></i></a>
-                </div>
-            </div>
-
+            <!-- Юридическая информация / Impressum для Германии -->
             <div class="border-top border-secondary pt-3">
                 <a class="text-warning fw-bold text-decoration-none d-flex justify-content-between align-items-center" data-bs-toggle="collapse" href="#legalCollapse" role="button">
                     <span><i class="fas fa-scale-balanced me-2"></i>{{ t.legal_title }}</span>
@@ -310,11 +360,10 @@
                     </div>
                 </div>
             </div>
-
         </div>
     </div>
 
-    <!-- Футер -->
+    <!-- Футер с Impressum -->
     <footer class="text-center py-4 border-top border-secondary mt-5">
         <div class="container">
             <p class="mb-1 text-light">© 2026 {{ t.legal_name }} — All Rights Reserved.</p>
