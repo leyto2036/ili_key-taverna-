@@ -44,7 +44,7 @@
         </div>
         <div class="container">
             <div class="mb-3">
-                <a href="{{ links.maps }}" target="_blank" class="map-badge">
+                <a href="#routeLiveSection" class="map-badge" title="Dollmannstr. 27, 81541 München">
                     <i class="fas fa-location-dot me-1"></i> {{ t.address_label }}
                 </a>
             </div>
@@ -52,11 +52,8 @@
             <p class="lead mb-3 text-light px-2">{{ t.subtitle }}</p>
 
             <div class="mb-4 d-flex align-items-center justify-content-center gap-2">
-                <button class="btn btn-outline-warning px-4 py-2 fw-bold rounded-pill shadow-sm" data-bs-toggle="modal" data-bs-target="#tablesModal">
-                    <span id="tablesBadgeText">{{ t.tables_btn }}</span>
-                </button>
-                <button class="btn btn-sm btn-outline-light rounded-circle edit-tool" data-bs-toggle="modal" data-bs-target="#editTablesModal" title="{{ t.tables_edit }}">
-                    <i class="fas fa-pen"></i>
+                <button type="button" class="btn btn-outline-warning px-4 py-2 fw-bold rounded-pill shadow-sm" data-bs-toggle="modal" data-bs-target="#tablesModal">
+                    <i class="fas fa-calendar-check me-2"></i><span>{{ t.reserve_btn }}</span>
                 </button>
             </div>
 
@@ -98,7 +95,7 @@
     
 <!-- Карточка маршрута и живой карты в реальном времени -->
 <div class="container my-4">
-    <div class="route-live-card p-3 p-md-4">
+    <div class="route-live-card p-3 p-md-4" id="routeLiveSection">
         <div class="row g-3 align-items-center">
             <div class="col-md-5">
                 <span class="badge bg-warning text-dark mb-2">Live Map • München</span>
@@ -106,10 +103,7 @@
                 <p class="text-muted small mb-2">{{ t.address_label }}</p>
                 <p class="small mb-3">{{ t.about_text }}</p>
                 <div class="d-flex flex-wrap gap-2">
-                    <a href="{{ links.maps }}" target="_blank" rel="noopener noreferrer" class="btn btn-warning btn-sm fw-bold text-dark">
-                        <i class="fas fa-route me-1"></i> {{ t.address_label }}
-                    </a>
-                    <a href="/about" class="btn btn-outline-dark btn-sm fw-bold">
+<a href="/about" class="btn btn-outline-dark btn-sm fw-bold">
                         <i class="fas fa-store me-1"></i> {{ t.about_title }}
                     </a>
                 </div>
@@ -158,14 +152,33 @@
             <!-- Правая колонка с блюдами -->
             <div class="col-lg-6" id="menuSection">
                 <div class="bg-white p-3 p-md-4 rounded-4 shadow-sm text-dark">
-                    <div class="d-flex justify-content-between align-items-center mb-4">
+                    <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-3">
                         <h3 class="fw-bold m-0">{{ t.menu_title }}</h3>
-                        <button class="btn btn-sm btn-outline-dark" onclick="toggleMenuColumn()"><i class="fas fa-times"></i></button>
+                        <div class="d-flex align-items-center gap-2">
+                            <span class="badge bg-light text-dark border py-2 px-2" title="{{ t.sort_label }}">
+                                <i class="fas fa-sort-amount-down text-warning me-1"></i>{{ t.sort_label }}
+                            </span>
+                            <button class="btn btn-sm btn-outline-dark" type="button" onclick="toggleMenuColumn()"><i class="fas fa-times"></i></button>
+                        </div>
+                    </div>
+                    <div class="d-flex flex-wrap gap-2 mb-3" id="menuCategoryFilters">
+                        <button type="button" class="btn btn-sm btn-outline-warning text-dark fw-bold menu-cat-btn" data-cat="food" onclick="toggleMenuCategory('food', this)">
+                            <i class="fas fa-utensils me-1"></i>{{ t.cat_food }}
+                        </button>
+                        <button type="button" class="btn btn-sm btn-outline-warning text-dark fw-bold menu-cat-btn" data-cat="drinks" onclick="toggleMenuCategory('drinks', this)">
+                            <i class="fas fa-glass-martini-alt me-1"></i>{{ t.cat_drinks }}
+                        </button>
+                        <button type="button" class="btn btn-sm btn-outline-warning text-dark fw-bold menu-cat-btn" data-cat="sauces" onclick="toggleMenuCategory('sauces', this)">
+                            <i class="fas fa-mortar-pestle me-1"></i>{{ t.cat_sauces }}
+                        </button>
                     </div>
 
-                    <div class="row g-3" style="max-height: 650px; overflow-y: auto;">
+                    <div class="row g-3" id="menuItemsGrid" style="max-height: 650px; overflow-y: auto;">
                         {% for item in menu %}
-                        <div class="col-12 col-md-6 scene">
+                        {% set _n = item.name|lower %}
+                        {% set _d = item.desc|lower %}
+                        {% set _cat = 'sauces' if ('tzatziki' in _n or 'soße' in _d or 'sauce' in _d or 'dip' in _d or 'aioli' in _d) else ('drinks' if ('wein' in _d or 'cola' in _n or 'wasser' in _n or 'saft' in _n or 'bier' in _n or 'ouzo' in _n) else 'food') %}
+                        <div class="col-12 col-md-6 scene menu-dish-item" data-category="{{ _cat }}" data-orig-index="{{ loop.index0 }}">
                             <div class="card-flip" id="card-{{ item.id }}" onclick="flipCard(event, this)">
                                 <div class="card-face card-front">
                                     <div class="position-relative">
@@ -325,6 +338,9 @@
                         <span>{{ t.total_sum }}</span>
                         <span id="cartTotalPrice">0.00 €</span>
                     </div>
+                        <button type="button" class="btn btn-danger w-100 fw-bold mt-2" onclick="clearCart()">
+                            <i class="fas fa-trash-alt me-1"></i>{{ t.clear_cart_btn }}
+                        </button>
                     
 <div class="mb-3">
     <label class="form-label small fw-bold text-dark d-block">Способ получения / Bestellart</label>

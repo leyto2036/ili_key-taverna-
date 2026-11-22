@@ -410,3 +410,48 @@ updateCartUI = function () {
 document.addEventListener('DOMContentLoaded', () => {
     syncRouteCardSummary();
 });
+
+
+function clearCart() {
+    cart = [];
+    updateCartUI();
+}
+
+const activeMenuCategories = new Set();
+
+function toggleMenuCategory(cat, btnEl) {
+    if (activeMenuCategories.has(cat)) {
+        activeMenuCategories.delete(cat);
+        if (btnEl) {
+            btnEl.classList.remove('active', 'btn-warning');
+            btnEl.classList.add('btn-outline-warning');
+        }
+    } else {
+        activeMenuCategories.add(cat);
+        if (btnEl) {
+            btnEl.classList.add('active', 'btn-warning');
+            btnEl.classList.remove('btn-outline-warning');
+        }
+    }
+    applyMenuCombinedSort();
+}
+
+function applyMenuCombinedSort() {
+    const grid = document.getElementById('menuItemsGrid');
+    if (!grid) return;
+    const cards = Array.from(grid.querySelectorAll('.menu-dish-item'));
+    cards.sort((a, b) => {
+        const aCat = a.dataset.category || 'food';
+        const bCat = b.dataset.category || 'food';
+        const aMatch = activeMenuCategories.size === 0 ? 1 : (activeMenuCategories.has(aCat) ? 1 : 0);
+        const bMatch = activeMenuCategories.size === 0 ? 1 : (activeMenuCategories.has(bCat) ? 1 : 0);
+        if (aMatch !== bMatch) return bMatch - aMatch;
+        return Number(a.dataset.origIndex || 0) - Number(b.dataset.origIndex || 0);
+    });
+    cards.forEach((card, idx) => {
+        const isMatched = activeMenuCategories.size === 0 || activeMenuCategories.has(card.dataset.category);
+        card.style.order = isMatched ? String(idx) : String(1000 + idx);
+        card.classList.toggle('opacity-50', activeMenuCategories.size > 0 && !isMatched);
+        grid.appendChild(card);
+    });
+}
