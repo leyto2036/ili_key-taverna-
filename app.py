@@ -598,10 +598,19 @@ def edit_menu_item(item_id):
 def initialize_database():
     with app.app_context():
         db.create_all()
-        for item_id, name, description, price in DEFAULT_MENU:
+        for entry in MENU_ITEMS:
+            item_id = entry["id"]
             if db.session.get(MenuItem, item_id) is None:
-                db.session.add(MenuItem(id=item_id, name=name, description=description,
-                                        price=Decimal(price), image_url=f"/static/images/dishes/dish-{item_id}.jpg"))
+                raw_price = str(entry["price"]).replace("€", "").replace(",", ".").strip()
+                db.session.add(
+                    MenuItem(
+                        id=item_id,
+                        name=entry["name"],
+                        description=entry["desc"],
+                        price=Decimal(raw_price),
+                        image_url=entry.get("img") or f"/static/images/dishes/dish-{item_id}.jpg",
+                    )
+                )
         db.session.commit()
 
 @app.cli.command("init-db")
