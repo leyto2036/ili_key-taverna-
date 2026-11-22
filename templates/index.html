@@ -23,6 +23,7 @@
                     <a href="/set_language/en" class="text-decoration-none {% if current_lang == 'en' %}fw-bold text-warning{% else %}text-white{% endif %}">EN</a> |
                     <a href="/set_language/ru" class="text-decoration-none {% if current_lang == 'ru' %}fw-bold text-warning{% else %}text-white{% endif %}">RU</a>
                 </div>
+                <a href="/about" class="btn btn-outline-info btn-sm fw-bold"><i class="fas fa-store me-1"></i>{{ t.about_title }}</a>
                 <button class="btn btn-outline-warning btn-sm" type="button" data-bs-toggle="offcanvas" data-bs-target="#sidebar">
                     <i class="fas fa-bars fs-5"></i>
                 </button>
@@ -65,19 +66,78 @@
         </div>
     </header>
 
-    <!-- Главный блок: по умолчанию левая колонка на всю ширину, правая с блюдами скрыта до клика -->
+    
+<!-- Быстрый доступ: Доставка / Lieferando, Самовывоз (-10%), О заведении, Корзина -->
+<div class="container mt-4">
+    <div class="bg-white rounded-4 shadow-sm p-3 d-flex flex-wrap align-items-center justify-content-between gap-2 border">
+        <div class="d-flex flex-wrap gap-2 align-items-center">
+            <a href="{{ links.lieferando }}" target="_blank" rel="noopener noreferrer" class="btn btn-sm fw-bold text-white px-3 py-2 rounded-3" style="background:#ff8000;">
+                <i class="fas fa-motorcycle me-1"></i> Lieferando
+            </a>
+            <a href="{{ links.wolt }}" target="_blank" rel="noopener noreferrer" class="btn btn-sm fw-bold text-white px-3 py-2 rounded-3" style="background:#00c2e8;">
+                <i class="fas fa-bolt me-1"></i> Wolt
+            </a>
+            <a href="{{ links.uber }}" target="_blank" rel="noopener noreferrer" class="btn btn-sm fw-bold text-white px-3 py-2 rounded-3 bg-dark">
+                <i class="fas fa-car me-1"></i> Uber Eats
+            </a>
+            <button type="button" class="btn btn-success btn-sm fw-bold px-3 py-2 rounded-3" onclick="selectFulfillmentAndOpenCart('pickup')">
+                <i class="fas fa-walking me-1"></i> {{ t.pickup_title }}
+            </button>
+        </div>
+        <div class="d-flex gap-2 align-items-center">
+            <a href="/about" class="btn btn-outline-dark btn-sm fw-bold px-3 py-2 rounded-3">
+                <i class="fas fa-info-circle me-1"></i> {{ t.about_title }}
+            </a>
+            <button type="button" class="btn btn-warning btn-sm fw-bold text-dark px-3 py-2 rounded-3" data-bs-toggle="modal" data-bs-target="#cartModal">
+                <i class="fas fa-shopping-cart me-1"></i> {{ t.cart_title }}
+            </button>
+        </div>
+    </div>
+</div>
+
+    
+<!-- Карточка маршрута и живой карты в реальном времени -->
+<div class="container my-4">
+    <div class="route-live-card p-3 p-md-4">
+        <div class="row g-3 align-items-center">
+            <div class="col-md-5">
+                <span class="badge bg-warning text-dark mb-2">Live Map • München</span>
+                <h4 class="fw-bold mb-1">Taverna Yamas</h4>
+                <p class="text-muted small mb-2">{{ t.address_label }}</p>
+                <p class="small mb-3">{{ t.about_text }}</p>
+                <div class="d-flex flex-wrap gap-2">
+                    <a href="{{ links.maps }}" target="_blank" rel="noopener noreferrer" class="btn btn-warning btn-sm fw-bold text-dark">
+                        <i class="fas fa-route me-1"></i> {{ t.address_label }}
+                    </a>
+                    <a href="/about" class="btn btn-outline-dark btn-sm fw-bold">
+                        <i class="fas fa-store me-1"></i> {{ t.about_title }}
+                    </a>
+                </div>
+            </div>
+            <div class="col-md-7">
+                <iframe
+                    class="route-live-map rounded-4"
+                    loading="lazy"
+                    referrerpolicy="no-referrer-when-downgrade"
+                    src="https://www.google.com/maps?q=Dollmannstr.+27,+81541+M%C3%BCnchen&output=embed"
+                    title="Taverna Yamas Live Google Map">
+                </iframe>
+            </div>
+        </div>
+    </div>
+</div>
+
+    <!-- Главный блок -->
     <section class="container my-5 py-2">
         <div class="row g-4 align-items-start" id="mainRow">
 
-            <!-- Левая колонка (при старте col-lg-12, после клика становится col-lg-6) -->
-            <div class="col-lg-12 transition-all" id="leftColumn">
+            <!-- Левая колонка -->
+            <div class="col-lg-6 transition-all" id="leftColumn">
                 <h2 class="fw-bold mb-3">{{ t.about_title }}</h2>
                 <div class="d-flex gap-2 mb-4 flex-wrap">
-                    <!-- Кнопка открытия меню сдвигает блок влево -->
                     <button class="btn btn-dark btn-lg px-4 fw-bold shadow" type="button" onclick="toggleMenuColumn()">
                         <i class="fas fa-utensils me-2 text-warning"></i> {{ t.menu_btn }}
                     </button>
-                    <!-- Кнопка для фото оригинального меню -->
                     <button class="btn btn-outline-warning btn-lg px-4 fw-bold shadow" type="button" data-bs-toggle="modal" data-bs-target="#menuGalleryModal">
                         <i class="fas fa-book-open me-2"></i> {{ t.menu_photos_btn }}
                     </button>
@@ -95,8 +155,8 @@
                 <div id="savedBlocksContainer" class="mt-4"></div>
             </div>
 
-            <!-- Правая колонка с блюдами (изначально скрыта, появляется по клику) -->
-            <div class="col-lg-6 d-none" id="menuSection">
+            <!-- Правая колонка с блюдами -->
+            <div class="col-lg-6" id="menuSection">
                 <div class="bg-white p-3 p-md-4 rounded-4 shadow-sm text-dark">
                     <div class="d-flex justify-content-between align-items-center mb-4">
                         <h3 class="fw-bold m-0">{{ t.menu_title }}</h3>
@@ -120,6 +180,13 @@
                                         <span class="price-badge text-danger fw-bold" id="front-price-{{ item.id }}">{{ item.price }}</span>
                                     </div>
                                     <div class="px-2 pb-2">
+<div class="dish-qty-slot" onclick="event.stopPropagation();">
+    <button type="button" class="btn btn-sm btn-outline-secondary py-0 px-2 fw-bold" onclick="changeDishQty('{{ item.name }}', '{{ item.price }}', -1)" title="-1">−</button>
+    <span class="dish-qty-big is-empty" data-dish-qty="{{ item.name }}">0</span>
+    <button type="button" class="btn btn-sm btn-outline-success py-0 px-2 fw-bold" onclick="changeDishQty('{{ item.name }}', '{{ item.price }}', 1)" title="+1">+</button>
+    <span class="dish-size-tag">1 Port.</span>
+</div>
+
                                         <button class="btn btn-success btn-sm w-100 fw-bold" onclick="event.stopPropagation(); addToCart('{{ item.name }}', '{{ item.price }}')">
                                             <i class="fas fa-cart-plus me-1"></i> {{ t.to_order }}
                                         </button>
@@ -172,7 +239,7 @@
                     <img src="/static/images/bg/photo_2026-04-27_14-07-47 (2).jpg" class="card-img-top" style="height: 280px; object-fit: cover;" alt="Sommerterrasse">
                     <div class="card-body bg-light text-dark">
                         <h5 class="fw-bold mb-1">Sommerterrasse</h5>
-                        <p class="text-muted small mb-0">Verweilen Sie an sonnigen Tagen auf unserer einladenden Außenterrasse.</p>
+                        <p class="text-muted small mb-0">Verweilen Sie an sonnigen Tagen на unserer einladenden Außenterrasse.</p>
                     </div>
                 </div>
             </div>
@@ -258,9 +325,33 @@
                         <span>{{ t.total_sum }}</span>
                         <span id="cartTotalPrice">0.00 €</span>
                     </div>
-                    <button class="btn btn-warning btn-lg w-100 fw-bold text-dark" data-bs-toggle="modal" data-bs-target="#orderModal" data-bs-dismiss="modal">
-                        {{ t.checkout_btn }}
-                    </button>
+                    
+<div class="mb-3">
+    <label class="form-label small fw-bold text-dark d-block">Способ получения / Bestellart</label>
+    <div class="btn-group w-100" role="group">
+        <input type="radio" class="btn-check" name="fulfillmentMode" id="modeDelivery" value="delivery" checked onchange="updateCartUI()">
+        <label class="btn btn-outline-primary btn-sm fw-bold" for="modeDelivery">🚚 {{ t.delivery_info }}</label>
+
+        <input type="radio" class="btn-check" name="fulfillmentMode" id="modePickup" value="pickup" onchange="updateCartUI()">
+        <label class="btn btn-outline-success btn-sm fw-bold" for="modePickup">🏃 {{ t.pickup_title }}</label>
+    </div>
+</div>
+<div id="pickupDiscountRow" class="d-flex justify-content-between small text-success fw-bold mb-2 d-none">
+    <span>{{ t.pickup_title }}:</span>
+    <span id="cartDiscountAmount">-0.00 €</span>
+</div>
+<div class="mb-3">
+    <label class="form-label small fw-bold text-dark">Онлайн-оплата / Zahlung</label>
+    <select id="paymentMethodSelect" class="form-select form-select-sm">
+        <option value="Online (Karte / Apple Pay / Google Pay)">Онлайн-оплата (Karte / Apple Pay / Google Pay)</option>
+        <option value="PayPal">PayPal</option>
+        <option value="Bar bei Abholung / Lieferung">Оплата при получении (Bar / EC)</option>
+    </select>
+</div>
+<button type="button" class="btn btn-success btn-lg w-100 fw-bold text-white mb-2" onclick="completeOrderAndGenerateReceipt()">
+    <i class="fas fa-receipt me-1"></i> {{ t.checkout_btn }} & Quittung
+</button>
+
                 </div>
             </div>
         </div>
@@ -322,7 +413,7 @@
         </div>
     </div>
 
-    <!-- Выезжающая шторка с Impressum -->
+    <!-- Боковая панель с Impressum -->
     <div class="offcanvas offcanvas-end offcanvas-dark" tabindex="-1" id="sidebar">
         <div class="offcanvas-header border-bottom border-secondary">
             <h5 class="offcanvas-title fw-bold text-warning"><i class="fas fa-utensils me-2"></i>{{ t.sidebar_header }}</h5>
@@ -344,7 +435,6 @@
                 <h6 class="text-warning fw-bold"><i class="fas fa-phone me-2"></i>{{ t.contact_venue }}</h6>
                 <a href="{{ links.phone }}" class="btn btn-outline-light btn-sm w-100 text-start mb-2"><i class="fas fa-phone me-2"></i>089 4483787</a>
             </div>
-            <!-- Юридическая информация / Impressum для Германии -->
             <div class="border-top border-secondary pt-3">
                 <a class="text-warning fw-bold text-decoration-none d-flex justify-content-between align-items-center" data-bs-toggle="collapse" href="#legalCollapse" role="button">
                     <span><i class="fas fa-scale-balanced me-2"></i>{{ t.legal_title }}</span>
@@ -363,7 +453,7 @@
         </div>
     </div>
 
-    <!-- Футер с Impressum -->
+    <!-- Футер -->
     <footer class="text-center py-4 border-top border-secondary mt-5">
         <div class="container">
             <p class="mb-1 text-light">© 2026 {{ t.legal_name }} — All Rights Reserved.</p>
@@ -377,5 +467,33 @@
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+
+<!-- Модальное окно автоматической квитанции (Bestellbeleg / Quittung) -->
+<div class="modal fade" id="receiptModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content rounded-4 border-0 p-4" id="receiptPrintableArea">
+            <div class="modal-header border-0 pb-1">
+                <div>
+                    <h5 class="modal-title fw-bold text-dark m-0"><i class="fas fa-receipt text-success me-2"></i>Bestellbeleg / Quittung</h5>
+                    <small class="text-muted" id="receiptMetaLine">Taverna Yamas • München</small>
+                </div>
+                <button type="button" class="btn-close d-print-none" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body pt-2">
+                <div id="receiptBodyContent" class="small text-dark"></div>
+                <hr>
+                <div class="d-flex gap-2 d-print-none">
+                    <button type="button" class="btn btn-dark btn-sm fw-bold flex-grow-1" onclick="window.print()">
+                        <i class="fas fa-print me-1"></i> Drucken / PDF
+                    </button>
+                    <button type="button" class="btn btn-outline-secondary btn-sm fw-bold" onclick="copyReceiptText()">
+                        <i class="fas fa-copy me-1"></i> Kopieren
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
 </body>
 </html>

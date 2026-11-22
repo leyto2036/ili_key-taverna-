@@ -1,4 +1,3 @@
-// Корзина
 let cart = [];
 
 function addToCart(name, priceStr) {
@@ -39,31 +38,31 @@ function updateCartUI() {
     }
 }
 
-// Синхронизация карточек меню
+function copyCartToClipboard() {
+    if (cart.length === 0) return;
+    let text = "Bestellung Taverna Yamas:\n" + cart.map(i => `- ${i.name} (x${i.qty}): ${(i.price * i.qty).toFixed(2)} €`).join('\n');
+    navigator.clipboard.writeText(text);
+}
+
 function syncName(id) {
     let val = document.getElementById(`front-name-${id}`).value;
     document.getElementById(`back-name-${id}`).value = val;
 }
+
 function syncFrontName(id) {
     let val = document.getElementById(`back-name-${id}`).value;
     document.getElementById(`front-name-${id}`).value = val;
 }
+
 function syncPrice(id) {
     let val = document.getElementById(`back-price-${id}`).value;
     document.getElementById(`front-price-${id}`).innerText = val;
 }
 
-// Изменение размера карточек меню
-function adjustCardSize(delta) {
-    // Плавное изменение ширины или масштаба
-}
-
-// Переворот карточки
 function flipCard(event, cardElement) {
     cardElement.classList.toggle('flipped');
 }
 
-// Смена фона Hero
 function toggleHeroFit() {
     let hero = document.getElementById('heroHeader');
     if (hero.style.backgroundSize === 'contain') {
@@ -84,7 +83,6 @@ function updateHeroBg(event) {
     }
 }
 
-// Редактор блоков с обтеканием и кнопкой «Сохранить»
 let blockCounter = 0;
 
 function addMovableBlock() {
@@ -133,9 +131,7 @@ function saveBlock(id) {
     let block = document.getElementById(`block-${id}`);
     let textarea = block.querySelector('textarea');
     let img = block.querySelector('.block-preview-img');
-    let fileInput = block.querySelector('.block-file-input');
     
-    // Создаем зафиксированный элемент для контейнера ниже
     let savedContainer = document.getElementById('savedBlocksContainer');
     let savedCard = document.createElement('div');
     savedCard.className = 'p-3 bg-white rounded-4 shadow-sm border mb-3 clearfix position-relative';
@@ -150,10 +146,9 @@ function saveBlock(id) {
     `;
     
     savedContainer.appendChild(savedCard);
-    block.remove(); // Очищаем текущий редактор
+    block.remove();
 }
 
-// Функция перетаскивания мышкой
 function makeElementDraggable(elmnt) {
     let pos1 = 0, pos2 = 0, pos3 = 0, pos4 = 0;
     elmnt.onmousedown = dragMouseDown;
@@ -186,7 +181,6 @@ function makeElementDraggable(elmnt) {
     }
 }
 
-// Редактирование мест
 function saveTableSeats() {
     let indoor = document.getElementById('inputIndoorFree').value;
     let terrace = document.getElementById('inputTerraceFree').value;
@@ -198,7 +192,6 @@ function saveTableSeats() {
     modal.hide();
 }
 
-// Скрытие/показ инструментов редактора по клику в шторке
 let toolsVisible = true;
 function toggleEditorTools() {
     toolsVisible = !toolsVisible;
@@ -208,7 +201,6 @@ function toggleEditorTools() {
     });
 }
 
-// Лампочка (День / Ночь)
 function toggleTheme() {
     let body = document.body;
     let icon = document.getElementById('themeIcon');
@@ -230,7 +222,6 @@ function reserveTable(event) {
     modal.hide();
 }
 
-// Плавное открытие/скрытие меню (смещение левой колонки)
 function toggleMenuColumn() {
     let leftCol = document.getElementById('leftColumn');
     let menuSec = document.getElementById('menuSection');
@@ -245,3 +236,177 @@ function toggleMenuColumn() {
         leftCol.classList.add('col-lg-12');
     }
 }
+
+function getFulfillmentMode() {
+    const picked = document.querySelector('input[name="fulfillmentMode"]:checked');
+    return picked ? picked.value : 'delivery';
+}
+
+function selectFulfillmentAndOpenCart(mode) {
+    const radio = document.getElementById(mode === 'pickup' ? 'modePickup' : 'modeDelivery');
+    if (radio) radio.checked = true;
+    updateCartUI();
+    const modalEl = document.getElementById('cartModal');
+    if (modalEl && window.bootstrap) {
+        bootstrap.Modal.getOrCreateInstance(modalEl).show();
+    }
+}
+
+const _origUpdateCartUI = typeof updateCartUI === 'function' ? updateCartUI : null;
+updateCartUI = function () {
+    if (_origUpdateCartUI) _origUpdateCartUI();
+    const subtotal = cart.reduce((sum, i) => sum + (i.price * i.qty), 0);
+    const isPickup = getFulfillmentMode() === 'pickup';
+    const discount = isPickup ? subtotal * 0.10 : 0;
+    const finalSum = Math.max(0, subtotal - discount);
+
+    const discRow = document.getElementById('pickupDiscountRow');
+    const discAmt = document.getElementById('cartDiscountAmount');
+    if (discRow && discAmt) {
+        discRow.classList.toggle('d-none', !isPickup || subtotal <= 0);
+        discAmt.innerText = `-${discount.toFixed(2)} €`;
+    }
+    const totalEl = document.getElementById('cartTotalPrice');
+    const floatSumEl = document.getElementById('floatingCartSum');
+    if (totalEl) totalEl.innerText = `${finalSum.toFixed(2)} €`;
+    if (floatSumEl) floatSumEl.innerText = `${finalSum.toFixed(2)} €`;
+};
+
+let _lastReceiptPlainText = '';
+
+function completeOrderAndGenerateReceipt() {
+    if (!cart || cart.length === 0) {
+        alert('Корзина пуста / Warenkorb ist leer');
+        return;
+    }
+    const subtotal = cart.reduce((sum, i) => sum + (i.price * i.qty), 0);
+    const isPickup = getFulfillmentMode() === 'pickup';
+    const discount = isPickup ? subtotal * 0.10 : 0;
+    const total = Math.max(0, subtotal - discount);
+    const paySel = document.getElementById('paymentMethodSelect');
+    const payMethod = paySel ? paySel.value : 'Online';
+    const orderId = 'TY-' + String(Date.now()).slice(-6);
+    const nowStr = new Date().toLocaleString('de-DE');
+
+    const rowsHtml = cart.map(i =>
+        `<div class="d-flex justify-content-between mb-1"><span>${i.name} × ${i.qty}</span><strong>${(i.price * i.qty).toFixed(2)} €</strong></div>`
+    ).join('');
+
+    const htmlBody = `
+        <div class="mb-2"><strong>Beleg-Nr.:</strong> ${orderId}<br><strong>Datum:</strong> ${nowStr}<br><strong>Taverna Yamas</strong> • Dollmannstr. 27, 81541 München<br><strong>Steuernummer:</strong> 145/205/01127</div>
+        <hr class="my-2">
+        <div class="mb-2"><strong>Art:</strong> ${isPickup ? 'Selbstabholung (-10%)' : 'Lieferung'}<br><strong>Zahlung:</strong> ${payMethod}</div>
+        <hr class="my-2">
+        <div class="mb-2">${rowsHtml}</div>
+        <div class="d-flex justify-content-between small text-muted"><span>Zwischensumme:</span><span>${subtotal.toFixed(2)} €</span></div>
+        ${isPickup ? `<div class="d-flex justify-content-between small text-success fw-bold"><span>Rabatt Selbstabholung (-10%):</span><span>-${discount.toFixed(2)} €</span></div>` : ''}
+        <div class="d-flex justify-content-between fs-6 fw-bold border-top pt-2 mt-1"><span>Gesamtbetrag:</span><span>${total.toFixed(2)} €</span></div>
+    `;
+
+    _lastReceiptPlainText = [
+        `Taverna Yamas — Beleg ${orderId} (${nowStr})`,
+        `Dollmannstr. 27, 81541 München | Steuernummer: 145/205/01127`,
+        `Art: ${isPickup ? 'Selbstabholung (-10%)' : 'Lieferung'} | Zahlung: ${payMethod}`,
+        ...cart.map(i => `- ${i.name} x${i.qty}: ${(i.price * i.qty).toFixed(2)} €`),
+        isPickup ? `Rabatt (-10%): -${discount.toFixed(2)} €` : null,
+        `Gesamt: ${total.toFixed(2)} €`
+    ].filter(Boolean).join('\n');
+
+    const bodyContainer = document.getElementById('receiptBodyContent');
+    if (bodyContainer) bodyContainer.innerHTML = htmlBody;
+
+    const cartModalEl = document.getElementById('cartModal');
+    if (cartModalEl && window.bootstrap) {
+        const inst = bootstrap.Modal.getInstance(cartModalEl);
+        if (inst) inst.hide();
+    }
+    const receiptModalEl = document.getElementById('receiptModal');
+    if (receiptModalEl && window.bootstrap) {
+        bootstrap.Modal.getOrCreateInstance(receiptModalEl).show();
+    }
+}
+
+function copyReceiptText() {
+    if (!_lastReceiptPlainText) return;
+    navigator.clipboard?.writeText(_lastReceiptPlainText);
+}
+
+function syncDishQtyBadges() {
+    const qtyMap = new Map();
+    if (Array.isArray(cart)) {
+        cart.forEach(item => {
+            qtyMap.set(item.name, (qtyMap.get(item.name) || 0) + item.qty);
+        });
+    }
+    document.querySelectorAll('[data-dish-qty]').forEach(el => {
+        const dishName = el.getAttribute('data-dish-qty');
+        const q = qtyMap.get(dishName) || 0;
+        el.textContent = String(q);
+        el.classList.toggle('is-empty', q === 0);
+    });
+}
+
+function changeDishQty(name, priceStr, delta) {
+    const price = parseFloat(String(priceStr).replace('€', '').replace(',', '.').trim()) || 0;
+    const idx = cart.findIndex(i => i.name === name);
+    if (delta > 0) {
+        if (idx >= 0) cart[idx].qty += delta;
+        else cart.push({ name, price, qty: delta });
+    } else if (delta < 0 && idx >= 0) {
+        cart[idx].qty += delta;
+        if (cart[idx].qty <= 0) cart.splice(idx, 1);
+    }
+    updateCartUI();
+    syncDishQtyBadges();
+}
+
+const _prevUpdateCartUI = typeof updateCartUI === 'function' ? updateCartUI : null;
+updateCartUI = function () {
+    if (_prevUpdateCartUI) _prevUpdateCartUI();
+    syncDishQtyBadges();
+};
+
+document.addEventListener('DOMContentLoaded', () => {
+    syncDishQtyBadges();
+});
+
+function syncRouteCardSummary() {
+    const countEl = document.getElementById('routeSummaryCount');
+    const itemsEl = document.getElementById('routeSummaryItems');
+    const subEl = document.getElementById('routeSummarySubtotal');
+    const pickupEl = document.getElementById('routeSummaryPickupTotal');
+    const modeBadgeEl = document.getElementById('routeSummaryModeBadge');
+    if (!countEl || !itemsEl || !subEl || !pickupEl) return;
+
+    const list = Array.isArray(cart) ? cart : [];
+    const totalQty = list.reduce((sum, i) => sum + i.qty, 0);
+    const subtotal = list.reduce((sum, i) => sum + (i.price * i.qty), 0);
+    const pickupTotal = Math.max(0, subtotal * 0.90);
+    const isPickup = typeof getFulfillmentMode === 'function' && getFulfillmentMode() === 'pickup';
+
+    countEl.textContent = String(totalQty);
+    subEl.textContent = `${subtotal.toFixed(2)} €`;
+    pickupEl.textContent = `${pickupTotal.toFixed(2)} €`;
+
+    if (modeBadgeEl) {
+        modeBadgeEl.textContent = isPickup ? 'Abholung (-10%) aktiv' : 'Abholung -10% möglich';
+    }
+
+    if (list.length === 0) {
+        itemsEl.textContent = '—';
+    } else {
+        itemsEl.innerHTML = list
+            .map(i => `<div class="d-flex justify-content-between"><span>${i.name} × ${i.qty}</span><strong>${(i.price * i.qty).toFixed(2)} €</strong></div>`)
+            .join('');
+    }
+}
+
+const _beforeRouteSummaryUpdate = typeof updateCartUI === 'function' ? updateCartUI : null;
+updateCartUI = function () {
+    if (_beforeRouteSummaryUpdate) _beforeRouteSummaryUpdate();
+    syncRouteCardSummary();
+};
+
+document.addEventListener('DOMContentLoaded', () => {
+    syncRouteCardSummary();
+});

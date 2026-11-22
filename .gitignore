@@ -1,0 +1,7 @@
+venv/
+.venv/
+.backup_card_ui/
+.backup_route_summary/
+.backup_update/
+__pycache__/
+*.pyc
