@@ -455,3 +455,63 @@ function applyMenuCombinedSort() {
         grid.appendChild(card);
     });
 }
+
+
+function goToMenuForPickup(event) {
+    if (event) event.preventDefault();
+    try {
+        localStorage.setItem('taverna_fulfillment', 'pickup');
+    } catch (e) {}
+    if (typeof selectFulfillmentAndOpenCart === 'function') {
+        // Не открываем корзину сразу — ведём пользователя в меню для выбора блюд
+    }
+    const orderModalEl = document.getElementById('orderModal');
+    if (orderModalEl && window.bootstrap) {
+        const inst = bootstrap.Modal.getInstance(orderModalEl) || new bootstrap.Modal(orderModalEl);
+        inst.hide();
+    }
+    const menuSec = document.getElementById('menuSection');
+    const leftCol = document.getElementById('leftColumn');
+    if (menuSec && menuSec.classList.contains('d-none')) {
+        menuSec.classList.remove('d-none');
+        if (leftCol) {
+            leftCol.classList.remove('col-lg-12');
+            leftCol.classList.add('col-lg-6');
+        }
+    }
+    sortMenuByDemand();
+    const target = menuSec || document.getElementById('menuItemsGrid');
+    if (target) {
+        target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+}
+
+function getDemandScore(card) {
+    const baseDemand = Number(card.dataset.demand || 50);
+    const name = (card.querySelector('.card-title, h5, h6')?.textContent || '').trim();
+    let boosts = 0;
+    try {
+        const stats = JSON.parse(localStorage.getItem('taverna_item_demand') || '{}');
+        if (name && stats[name]) boosts = Number(stats[name]) * 10;
+    } catch (e) {}
+    return baseDemand + boosts;
+}
+
+function sortMenuByDemand() {
+    const grid = document.getElementById('menuItemsGrid');
+    if (!grid) return;
+    const cards = Array.from(grid.querySelectorAll('.menu-dish-item'));
+    cards.sort((a, b) => {
+        const diff = getDemandScore(b) - getDemandScore(a);
+        if (diff !== 0) return diff;
+        return Number(a.dataset.origIndex || 0) - Number(b.dataset.origIndex || 0);
+    });
+    cards.forEach((card, idx) => {
+        card.style.order = String(idx);
+        grid.appendChild(card);
+    });
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+    sortMenuByDemand();
+});
