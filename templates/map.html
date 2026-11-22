@@ -1,0 +1,112 @@
+<!doctype html>
+<html lang="{{ lang or 'de' }}">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Taverna Yamas — Dollmannstr. 27, 81541 München</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body class="bg-light text-dark">
+<div class="sticky-top bg-dark text-white border-bottom border-secondary shadow-sm py-2 px-3" id="stickyTopHeader" style="z-index: 1030;">
+    <div class="container-fluid d-flex flex-wrap align-items-center justify-content-between gap-2">
+        <div class="d-flex align-items-center gap-2">
+            <a href="{{ url_for('index') }}" class="navbar-brand fw-bold text-warning m-0 px-2 py-1 rounded-3 border border-warning-subtle d-inline-flex align-items-center" style="font-size: 1.25rem; letter-spacing: 0.4px;">
+                <i class="fas fa-utensils me-2"></i><span>Taverna Yamas</span>
+            </a>
+            <button type="button" class="btn btn-sm btn-light rounded-circle p-1 d-inline-flex align-items-center justify-content-center shadow-sm"
+                    style="width: 34px; height: 34px;"
+                    data-bs-toggle="modal" data-bs-target="#mapModal"
+                    title="Dollmannstr. 27, 81541 München">
+                <span style="color:#d91e18; font-size:1.1rem; line-height:1;"><i class="fas fa-map-marker-alt"></i></span>
+            </button>
+        </div>
+
+        <div class="d-flex flex-wrap align-items-center justify-content-center gap-2" id="topOrderBar">
+            <a href="{{ links.lieferando }}" target="_blank" rel="noopener noreferrer" class="btn fw-bold text-white px-4 py-2 rounded-3 shadow-sm" style="background:#ff8000; font-size: 1rem;">
+                <i class="fas fa-motorcycle me-2"></i>Lieferando
+            </a>
+            <a href="{{ links.wolt }}" target="_blank" rel="noopener noreferrer" class="btn fw-bold text-white px-4 py-2 rounded-3 shadow-sm" style="background:#00c2e8; font-size: 1rem;">
+                <i class="fas fa-bolt me-2"></i>Wolt
+            </a>
+            <a href="{{ links.uber }}" target="_blank" rel="noopener noreferrer" class="btn fw-bold text-white px-4 py-2 rounded-3 border border-light bg-secondary shadow-sm" style="font-size: 1rem;">
+                <i class="fas fa-car me-2"></i>Uber Eats
+            </a>
+            <button type="button" class="btn btn-success fw-bold px-4 py-2 rounded-3 shadow-sm" style="font-size: 1rem;" onclick="goToMenuForPickup(event)">
+                <i class="fas fa-walking me-2"></i>{{ t.pickup_title }}
+            </button>
+        </div>
+
+        <div class="d-flex align-items-center gap-2">
+            <a href="{{ url_for('set_language', lang='de') }}" class="btn btn-sm {{ 'btn-warning text-dark fw-bold' if lang == 'de' else 'btn-outline-light' }} py-1 px-2">DE</a>
+            <a href="{{ url_for('set_language', lang='en') }}" class="btn btn-sm {{ 'btn-warning text-dark fw-bold' if lang == 'en' else 'btn-outline-light' }} py-1 px-2">EN</a>
+            <a href="{{ url_for('set_language', lang='ru') }}" class="btn btn-sm {{ 'btn-warning text-dark fw-bold' if lang == 'ru' else 'btn-outline-light' }} py-1 px-2">RU</a>
+            <a href="/about" class="btn btn-sm btn-outline-info fw-bold px-3 py-1">
+                <i class="fas fa-store me-1"></i>Taverna Yamas München
+            </a>
+            <button class="btn btn-sm btn-outline-warning" type="button" data-bs-toggle="offcanvas" data-bs-target="#sidebar">
+                <i class="fas fa-bars"></i>
+            </button>
+        </div>
+    </div>
+</div>
+
+<main class="container my-4">
+        <div class="bg-white rounded-4 shadow-sm p-3 p-md-4 mb-4 border">
+            <h2 class="fw-bold mb-1">Dollmannstr. 27, 81541 München</h2>
+            <p class="text-muted mb-3">{{ t.about_text }}</p>
+            <div class="ratio ratio-16x9 rounded-4 overflow-hidden border">
+                <iframe
+                    src="https://www.google.com/maps?q=Dollmannstr.+27,+81541+M%C3%BCnchen&output=embed"
+                    loading="lazy"
+                    referrerpolicy="no-referrer-when-downgrade"
+                    title="Taverna Yamas Map">
+                </iframe>
+            </div>
+        </div>
+
+        <div class="bg-white rounded-4 shadow-sm p-3 p-md-4 border">
+            <h3 class="fw-bold mb-2"><i class="fas fa-video text-warning me-2"></i>Как добраться / Anfahrt</h3>
+            <p class="text-muted small mb-3">Видео-маршрут до Taverna Yamas (Dollmannstr. 27, 81541 München).</p>
+            <div class="ratio ratio-16x9 rounded-4 overflow-hidden bg-dark border">
+                <video controls preload="metadata" class="w-100 h-100">
+                    <source src="{{ url_for('static', filename='videos/anfahrt.mp4') }}" type="video/mp4">
+                    Видео-маршрут скоро будет добавлен в /static/videos/anfahrt.mp4.
+                </video>
+            </div>
+        </div>
+    </main>
+
+<div class="modal fade" id="mapModal" tabindex="-1">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content rounded-4 border-0 p-3 p-md-4">
+            <div class="modal-header border-0 pb-2">
+                <h5 class="modal-title fw-bold">
+                    <i class="fas fa-map-marker-alt text-danger me-2"></i>Dollmannstr. 27, 81541 München
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body pt-0">
+                <div class="ratio ratio-16x9 rounded-4 overflow-hidden border mb-3">
+                    <iframe
+                        src="https://www.google.com/maps?q=Dollmannstr.+27,+81541+M%C3%BCnchen&output=embed"
+                        loading="lazy"
+                        referrerpolicy="no-referrer-when-downgrade"
+                        title="Taverna Yamas Map">
+                    </iframe>
+                </div>
+                <h6 class="fw-bold mb-2"><i class="fas fa-video text-warning me-2"></i>Как добраться / Anfahrt</h6>
+                <div class="ratio ratio-16x9 rounded-4 overflow-hidden bg-dark border">
+                    <video controls preload="metadata" class="w-100 h-100">
+                        <source src="{{ url_for('static', filename='videos/anfahrt.mp4') }}" type="video/mp4">
+                        Видео-маршрут: положите файл в /static/videos/anfahrt.mp4
+                    </video>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+</body>
+</html>

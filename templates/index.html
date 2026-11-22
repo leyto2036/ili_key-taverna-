@@ -9,35 +9,51 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
 </head>
 <body data-theme="light">
-<div id="topLocationPin" class="bg-dark border-bottom border-secondary py-1 px-2 text-center small">
-    <a href="#routeLiveSection" class="text-warning text-decoration-none fw-semibold" title="Dollmannstr. 27, 81541 München">
-        <i class="fas fa-location-dot me-1"></i>Dollmannstr. 27, 81541 München
-    </a>
+<div class="sticky-top bg-dark text-white border-bottom border-secondary shadow-sm py-2 px-3" id="stickyTopHeader" style="z-index: 1030;">
+    <div class="container-fluid d-flex flex-wrap align-items-center justify-content-between gap-2">
+        <div class="d-flex align-items-center gap-2">
+            <a href="{{ url_for('index') }}" class="navbar-brand fw-bold text-warning m-0 px-2 py-1 rounded-3 border border-warning-subtle d-inline-flex align-items-center" style="font-size: 1.25rem; letter-spacing: 0.4px;">
+                <i class="fas fa-utensils me-2"></i><span>Taverna Yamas</span>
+            </a>
+            <button type="button" class="btn btn-sm btn-light rounded-circle p-1 d-inline-flex align-items-center justify-content-center shadow-sm"
+                    style="width: 34px; height: 34px;"
+                    data-bs-toggle="modal" data-bs-target="#mapModal"
+                    title="Dollmannstr. 27, 81541 München">
+                <span style="color:#d91e18; font-size:1.1rem; line-height:1;"><i class="fas fa-map-marker-alt"></i></span>
+            </button>
+        </div>
+
+        <div class="d-flex flex-wrap align-items-center justify-content-center gap-2" id="topOrderBar">
+            <a href="{{ links.lieferando }}" target="_blank" rel="noopener noreferrer" class="btn fw-bold text-white px-4 py-2 rounded-3 shadow-sm" style="background:#ff8000; font-size: 1rem;">
+                <i class="fas fa-motorcycle me-2"></i>Lieferando
+            </a>
+            <a href="{{ links.wolt }}" target="_blank" rel="noopener noreferrer" class="btn fw-bold text-white px-4 py-2 rounded-3 shadow-sm" style="background:#00c2e8; font-size: 1rem;">
+                <i class="fas fa-bolt me-2"></i>Wolt
+            </a>
+            <a href="{{ links.uber }}" target="_blank" rel="noopener noreferrer" class="btn fw-bold text-white px-4 py-2 rounded-3 border border-light bg-secondary shadow-sm" style="font-size: 1rem;">
+                <i class="fas fa-car me-2"></i>Uber Eats
+            </a>
+            <button type="button" class="btn btn-success fw-bold px-4 py-2 rounded-3 shadow-sm" style="font-size: 1rem;" onclick="goToMenuForPickup(event)">
+                <i class="fas fa-walking me-2"></i>{{ t.pickup_title }}
+            </button>
+        </div>
+
+        <div class="d-flex align-items-center gap-2">
+            <a href="{{ url_for('set_language', lang='de') }}" class="btn btn-sm {{ 'btn-warning text-dark fw-bold' if lang == 'de' else 'btn-outline-light' }} py-1 px-2">DE</a>
+            <a href="{{ url_for('set_language', lang='en') }}" class="btn btn-sm {{ 'btn-warning text-dark fw-bold' if lang == 'en' else 'btn-outline-light' }} py-1 px-2">EN</a>
+            <a href="{{ url_for('set_language', lang='ru') }}" class="btn btn-sm {{ 'btn-warning text-dark fw-bold' if lang == 'ru' else 'btn-outline-light' }} py-1 px-2">RU</a>
+            <a href="/about" class="btn btn-sm btn-outline-info fw-bold px-3 py-1">
+                <i class="fas fa-store me-1"></i>Taverna Yamas München
+            </a>
+            <button class="btn btn-sm btn-outline-warning" type="button" data-bs-toggle="offcanvas" data-bs-target="#sidebar">
+                <i class="fas fa-bars"></i>
+            </button>
+        </div>
+    </div>
 </div>
 
-
-    <!-- Навигация -->
-    <nav class="navbar navbar-dark bg-dark px-3 py-3 sticky-top">
-        <div class="container-fluid d-flex justify-content-between align-items-center">
-            <a class="navbar-brand fw-bold fs-5" href="#"><i class="fas fa-utensils text-warning me-2"></i>Taverna Yamas</a>
-            <div class="d-flex align-items-center gap-3">
-                <button class="btn btn-link text-warning fs-5 p-0 text-decoration-none" onclick="toggleTheme()" title="День / Ночь">
-                    <i class="fas fa-lightbulb" id="themeIcon"></i>
-                </button>
-                <div class="lang-switch fs-6 text-white">
-                    <a href="/set_language/de" class="text-decoration-none {% if current_lang == 'de' %}fw-bold text-warning{% else %}text-white{% endif %}">DE</a> |
-                    <a href="/set_language/en" class="text-decoration-none {% if current_lang == 'en' %}fw-bold text-warning{% else %}text-white{% endif %}">EN</a> |
-                    <a href="/set_language/ru" class="text-decoration-none {% if current_lang == 'ru' %}fw-bold text-warning{% else %}text-white{% endif %}">RU</a>
-                </div>
-                <a href="/about" class="btn btn-outline-info btn-sm fw-bold"><i class="fas fa-store me-1"></i>{{ t.about_title }}</a>
-                <button class="btn btn-outline-warning btn-sm" type="button" data-bs-toggle="offcanvas" data-bs-target="#sidebar">
-                    <i class="fas fa-bars fs-5"></i>
-                </button>
-            </div>
-        </div>
-    </nav>
-
-    <!-- Шапка -->
+<!-- Навигация -->
+<!-- Шапка -->
     <header class="hero" id="heroHeader">
         <div class="hero-controls edit-tool">
             <button class="hero-btn" title="Изменить режим фона" onclick="toggleHeroFit()">
@@ -64,217 +80,77 @@
         </div>
     </header>
 
-    
-<!-- Быстрый доступ: Доставка / Lieferando, Самовывоз (-10%), О заведении, Корзина -->
-<div class="container mt-2">
-    <div class="bg-white rounded-4 shadow-sm p-3 d-flex flex-wrap align-items-center justify-content-between gap-2 border">
-        <div class="d-flex flex-wrap gap-2 align-items-center">
-            <a href="{{ links.lieferando }}" target="_blank" rel="noopener noreferrer" class="btn btn-sm fw-bold text-white px-3 py-2 rounded-3" style="background:#ff8000;">
-                <i class="fas fa-motorcycle me-1"></i> Lieferando
-            </a>
-            <a href="{{ links.wolt }}" target="_blank" rel="noopener noreferrer" class="btn btn-sm fw-bold text-white px-3 py-2 rounded-3" style="background:#00c2e8;">
-                <i class="fas fa-bolt me-1"></i> Wolt
-            </a>
-            <a href="{{ links.uber }}" target="_blank" rel="noopener noreferrer" class="btn btn-sm fw-bold text-white px-3 py-2 rounded-3 bg-dark">
-                <i class="fas fa-car me-1"></i> Uber Eats
-            </a>
-            <button type="button" class="btn btn-success btn-sm fw-bold px-3 py-2 rounded-3" onclick="goToMenuForPickup(event)">
-                <i class="fas fa-walking me-1"></i> {{ t.pickup_title }}
-            </button>
-        </div>
-        <div class="d-flex gap-2 align-items-center">
-            <a href="/about" class="btn btn-outline-dark btn-sm fw-bold px-3 py-2 rounded-3">
-                <i class="fas fa-info-circle me-1"></i> {{ t.about_title }}
-            </a>
-            <button type="button" class="btn btn-warning btn-sm fw-bold text-dark px-3 py-2 rounded-3" data-bs-toggle="modal" data-bs-target="#cartModal">
-                <i class="fas fa-shopping-cart me-1"></i> {{ t.cart_title }}
-            </button>
-        </div>
-    </div>
-</div>
-
-    
-<!-- Карточка маршрута и живой карты в реальном времени -->
-<div class="container my-2">
-    <div class="route-live-card p-3 p-md-4" id="routeLiveSection">
-        <div class="row g-3 align-items-center">
-            <div class="col-md-5">
-                <span class="badge bg-warning text-dark mb-2">Live Map • München</span>
-                <h4 class="fw-bold mb-1">Taverna Yamas</h4>
-                <p class="text-muted small mb-2">{{ t.address_label }}</p>
-                <p class="small mb-3">{{ t.about_text }}</p>
-                <div class="d-flex flex-wrap gap-2">
-<a href="/about" class="btn btn-outline-dark btn-sm fw-bold">
-                        <i class="fas fa-store me-1"></i> {{ t.about_title }}
-                    </a>
-                </div>
-            </div>
-            <div class="col-md-7">
-                <iframe
-                    class="route-live-map rounded-4"
-                    loading="lazy"
-                    referrerpolicy="no-referrer-when-downgrade"
-                    src="https://www.google.com/maps?q=Dollmannstr.+27,+81541+M%C3%BCnchen&output=embed"
-                    title="Taverna Yamas Live Google Map">
-                </iframe>
-            </div>
-        </div>
-    </div>
-</div>
 
     <!-- Главный блок -->
-    <div class="container my-2" id="sectionTabsBar">
-    <div class="d-flex flex-wrap gap-2 justify-content-center bg-white p-2 rounded-4 shadow-sm border">
-        <a href="#menuSection" class="btn btn-sm btn-warning fw-bold text-dark px-3 rounded-3" onclick="focusSection('menuSection', event)">
-            <i class="fas fa-utensils me-1"></i>{{ t.menu_title }}
-        </a>
-        <a href="#routeLiveSection" class="btn btn-sm btn-outline-dark fw-bold px-3 rounded-3" onclick="focusSection('routeLiveSection', event)">
-            <i class="fas fa-map-marker-alt me-1"></i>Dollmannstr. 27
-        </a>
-        <a href="#leftColumn" class="btn btn-sm btn-outline-dark fw-bold px-3 rounded-3" onclick="focusSection('leftColumn', event)">
-            <i class="fas fa-store me-1"></i>{{ t.about_title }}
-        </a>
+<section class="container my-4" id="menuSection">
+    <div class="bg-white p-3 p-md-4 rounded-4 shadow-sm text-dark border">
+        <div class="row g-3 align-items-start">
+            <div class="col-12 col-lg-3 mb-3" id="menuModesLeftPanel">
+    <div class="bg-white p-3 rounded-4 shadow-sm border text-dark sticky-top" style="top: 76px; z-index: 10;">
+        <div class="fw-bold mb-2 d-flex align-items-center justify-content-between">
+            <span><i class="fas fa-sliders-h text-warning me-2"></i>{{ t.sort_label }}</span>
+            <span class="badge bg-light text-dark border"><i class="fas fa-sort-amount-down"></i></span>
+        </div>
+        <div class="d-flex flex-column gap-2" id="menuCategoryFilters">
+            <button type="button" class="btn btn-sm btn-outline-warning text-dark fw-bold text-start menu-cat-btn" data-cat="food" onclick="toggleMenuCategory('food', this)">
+                <i class="fas fa-utensils me-2"></i>{{ t.mode_food }}
+            </button>
+            <button type="button" class="btn btn-sm btn-outline-warning text-dark fw-bold text-start menu-cat-btn" data-cat="drinks" onclick="toggleMenuCategory('drinks', this)">
+                <i class="fas fa-tint me-2"></i>{{ t.mode_drinks }}
+            </button>
+            <button type="button" class="btn btn-sm btn-outline-warning text-dark fw-bold text-start menu-cat-btn" data-cat="pizza" onclick="toggleMenuCategory('pizza', this)">
+                <i class="fas fa-pizza-slice me-2"></i>{{ t.mode_pizza }}
+            </button>
+            <button type="button" class="btn btn-sm btn-outline-warning text-dark fw-bold text-start menu-cat-btn" data-cat="pasta" onclick="toggleMenuCategory('pasta', this)">
+                <i class="fas fa-bacon me-2"></i>{{ t.mode_pasta }}
+            </button>
+            <button type="button" class="btn btn-sm btn-outline-warning text-dark fw-bold text-start menu-cat-btn" data-cat="sauces" onclick="toggleMenuCategory('sauces', this)">
+                <i class="fas fa-mortar-pestle me-2"></i>{{ t.mode_sauces }}
+            </button>
+        </div>
     </div>
 </div>
 
-<section class="container mt-3 mb-4 py-1" style="margin-top: -12px;">
-        <div class="row g-4 align-items-start" id="mainRow">
+            <div class="col-12 col-lg-9">
+                
+        <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-3">
+            <h3 class="fw-bold m-0">{{ t.menu_title }}</h3>
+            <span class="badge bg-light text-dark border py-2 px-3" title="{{ t.sort_label }}">
+                <i class="fas fa-sort-amount-down text-warning me-1"></i>{{ t.sort_label }}
+            </span>
+        </div>
 
-            <!-- Левая колонка -->
-            <div class="col-lg-6 transition-all" id="leftColumn">
-                <h2 class="fw-bold mb-3">{{ t.about_title }}</h2>
-                <div class="d-flex gap-2 mb-4 flex-wrap">
-                    <button class="btn btn-dark btn-lg px-4 fw-bold shadow" type="button" onclick="toggleMenuColumn()">
-                        <i class="fas fa-utensils me-2 text-warning"></i> {{ t.menu_btn }}
-                    </button>
-                    <button class="btn btn-outline-warning btn-lg px-4 fw-bold shadow" type="button" data-bs-toggle="modal" data-bs-target="#menuGalleryModal">
-                        <i class="fas fa-book-open me-2"></i> {{ t.menu_photos_btn }}
-                    </button>
-                    <button class="btn btn-outline-primary fw-bold shadow-sm px-3 edit-tool" onclick="addMovableBlock()" title="Добавить блок описания с фото">
-                        <i class="fas fa-plus me-1"></i> {{ t.block_btn }}
-                    </button>
-                </div>
-
-                <p class="text-muted lh-lg mb-3">{{ t.about_text }}</p>
-
-                <div id="customDescriptionArea">
-                    <p class="text-muted small mb-0 edit-tool"><i class="fas fa-info-circle me-1"></i> Нажимайте «+ Блок», добавляйте текст и фото, перетаскивайте и нажимайте «Сохранить».</p>
-                </div>
-
-                <div id="savedBlocksContainer" class="mt-4"></div>
-            </div>
-
-            <!-- Правая колонка с блюдами -->
-            <div class="col-lg-6" id="menuSection">
-                <div class="bg-white p-3 p-md-4 rounded-4 shadow-sm text-dark">
-                    <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-3">
-                        <h3 class="fw-bold m-0">{{ t.menu_title }}</h3>
-                        <div class="d-flex align-items-center gap-2">
-                            <span class="badge bg-light text-dark border py-2 px-2" title="{{ t.sort_label }}">
-                                <i class="fas fa-sort-amount-down text-warning me-1"></i>{{ t.sort_label }}
-                            </span>
-                            <button class="btn btn-sm btn-outline-dark" type="button" onclick="toggleMenuColumn()"><i class="fas fa-times"></i></button>
-                        </div>
-                    </div>
-                    <div class="d-flex flex-wrap gap-2 mb-3" id="menuCategoryFilters">
-                        <button type="button" class="btn btn-sm btn-outline-warning text-dark fw-bold menu-cat-btn" data-cat="food" onclick="toggleMenuCategory('food', this)">
-                            <i class="fas fa-utensils me-1"></i>{{ t.cat_food }}
-                        </button>
-                        <button type="button" class="btn btn-sm btn-outline-warning text-dark fw-bold menu-cat-btn" data-cat="drinks" onclick="toggleMenuCategory('drinks', this)">
-                            <i class="fas fa-glass-martini-alt me-1"></i>{{ t.cat_drinks }}
-                        </button>
-                        <button type="button" class="btn btn-sm btn-outline-warning text-dark fw-bold menu-cat-btn" data-cat="sauces" onclick="toggleMenuCategory('sauces', this)">
-                            <i class="fas fa-mortar-pestle me-1"></i>{{ t.cat_sauces }}
-                        </button>
-                    </div>
-
-                    <div class="row g-3" id="menuItemsGrid" style="max-height: 650px; overflow-y: auto;">
-                        {% for item in menu|sort(attribute='demand', reverse=True) %}
-                        {% set _n = item.name|lower %}
-                        {% set _d = item.desc|lower %}
-                        {% set _cat = 'sauces' if ('tzatziki' in _n or 'soße' in _d or 'sauce' in _d or 'dip' in _d or 'aioli' in _d) else ('drinks' if ('wein' in _d or 'cola' in _n or 'wasser' in _n or 'saft' in _n or 'bier' in _n or 'ouzo' in _n) else 'food') %}
-                        <div class="col-12 col-md-6 scene menu-dish-item" data-demand="{{ item.demand|default(50) }}" data-orig-index="{{ loop.index0 }}" data-category="{{ _cat }}" data-orig-index="{{ loop.index0 }}">
-                            <div class="card-flip" id="card-{{ item.id }}" onclick="flipCard(event, this)">
-                                <div class="card-face card-front">
-                                    <div class="position-relative">
-                                        <img src="{{ item.img }}" alt="{{ item.name }}" id="img-view-{{ item.id }}" style="height: 160px; object-fit: cover; width: 100%;">
-                                        <label class="btn btn-sm btn-dark position-absolute bottom-0 end-0 m-2 rounded-circle shadow edit-tool" title="Сменить фото" onclick="event.stopPropagation();">
-                                            <i class="fas fa-camera"></i>
-                                            <input type="file" hidden onchange="updateImage(event, '{{ item.id }}')">
-                                        </label>
-                                    </div>
-                                    <div class="card-front-body p-2">
-                                        <input type="text" class="editable-input-front fw-bold border-0 bg-transparent w-100" value="{{ item.name }}" id="front-name-{{ item.id }}" oninput="syncName('{{ item.id }}')" onclick="event.stopPropagation();">
-                                        <span class="price-badge text-danger fw-bold" id="front-price-{{ item.id }}">{{ item.price }}</span>
-                                    </div>
-                                    <div class="px-2 pb-2">
-<div class="dish-qty-slot" onclick="event.stopPropagation();">
-    <button type="button" class="btn btn-sm btn-outline-secondary py-0 px-2 fw-bold" onclick="changeDishQty('{{ item.name }}', '{{ item.price }}', -1)" title="-1">−</button>
-    <span class="dish-qty-big is-empty" data-dish-qty="{{ item.name }}">0</span>
-    <button type="button" class="btn btn-sm btn-outline-success py-0 px-2 fw-bold" onclick="changeDishQty('{{ item.name }}', '{{ item.price }}', 1)" title="+1">+</button>
-    <span class="dish-size-tag">1 Port.</span>
-</div>
-
-                                        <button class="btn btn-success btn-sm w-100 fw-bold" onclick="event.stopPropagation(); addToCart('{{ item.name }}', '{{ item.price }}')">
-                                            <i class="fas fa-cart-plus me-1"></i> {{ t.to_order }}
-                                        </button>
-                                    </div>
-                                </div>
-                                <div class="card-face card-back p-3 bg-dark text-white">
-                                    <div onclick="event.stopPropagation();">
-                                        <small class="text-warning"><i class="fas fa-pen me-1"></i> Редактирование</small>
-                                        <input type="text" class="form-control form-control-sm mb-2 fw-bold" value="{{ item.name }}" id="back-name-{{ item.id }}" oninput="syncFrontName('{{ item.id }}')">
-                                        <textarea class="form-control form-control-sm mb-2" rows="2" id="back-desc-{{ item.id }}">{{ item.desc }}</textarea>
-                                        <input type="text" class="form-control form-control-sm mb-2" value="{{ item.price }}" id="back-price-{{ item.id }}" oninput="syncPrice('{{ item.id }}')">
-                                    </div>
-                                    <div onclick="event.stopPropagation();">
-                                        <button class="btn btn-warning btn-sm w-100 fw-bold text-dark mb-1" onclick="addToCartFromBack('{{ item.id }}')">
-                                            <i class="fas fa-cart-plus me-1"></i> {{ t.to_order }}
-                                        </button>
-                                        <button class="btn btn-outline-light btn-sm w-100 py-1" onclick="document.getElementById('card-{{ item.id }}').classList.remove('flipped');">
-                                            <i class="fas fa-arrow-left me-1"></i> {{ t.back_to_menu }}
-                                        </button>
-                                    </div>
-                                </div>
+        <div class="row g-3" id="menuItemsGrid">
+            {% for item in (menu or [])|sort(attribute='demand', reverse=True) %}
+            {% set _n = (item.name or '')|lower %}
+{% set _d = (item.desc or '')|lower %}
+{% set _cat = 'pizza' if ('pizza' in _n or 'пицц' in _n or 'pizza' in _d) else ('pasta' if ('pasta' in _n or 'nudel' in _n or 'spaghetti' in _n or 'penne' in _n or 'паст' in _n) else ('sauces' if ('tzatziki' in _n or 'soße' in _d or 'sauce' in _d or 'dip' in _d or 'aioli' in _d or 'соус' in _n) else ('drinks' if ('wasser' in _n or 'water' in _n or 'вод' in _n or 'wein' in _d or 'cola' in _n or 'saft' in _n or 'bier' in _n or 'ouzo' in _n or 'напит' in _d) else 'food'))) %}
+            <div class="col-12 col-sm-6 col-md-4 col-xl-3 scene menu-dish-item" data-category="{{ _cat }}" data-demand="{{ item.demand|default(50) }}" data-orig-index="{{ loop.index0 }}">
+                <div class="card h-100 rounded-4 overflow-hidden shadow-sm border-0">
+                    <img src="{{ item.img }}" alt="{{ item.name }}" style="height: 180px; object-fit: cover; width: 100%;">
+                    <div class="card-body d-flex flex-column justify-content-between">
+                        <div>
+                            <div class="d-flex justify-content-between align-items-start gap-2 mb-1">
+                                <h6 class="fw-bold m-0">{{ item.name }}</h6>
+                                <span class="badge bg-warning text-dark fw-bold">{{ item.price }}</span>
                             </div>
+                            <p class="text-muted small mb-3">{{ item.desc }}</p>
                         </div>
-                        {% endfor %}
+                        <button type="button" class="btn btn-success btn-sm fw-bold w-100" onclick="addToCart('{{ item.name|e }}', '{{ item.price|e }}')">
+                            <i class="fas fa-cart-plus me-1"></i>{{ t.to_order }}
+                        </button>
                     </div>
                 </div>
             </div>
-
+            {% endfor %}
         </div>
-    </section>
-
-    <!-- Галерея интерьера -->
-    <section class="container my-5 py-4 border-top" id="gallerySection">
-        <div class="text-center mb-4">
-            <h2 class="fw-bold">Atmosphäre & Eindrücke</h2>
-            <p class="text-muted">Ein kleiner Einblick in unsere Taverna</p>
-        </div>
-        <div class="row g-4">
-            <div class="col-md-6">
-                <div class="card border-0 shadow-sm rounded-4 overflow-hidden">
-                    <img src="/static/images/bg/photo_2026-04-27_14-07-53.jpg" class="card-img-top" style="height: 280px; object-fit: cover;" alt="Innenbereich">
-                    <div class="card-body bg-light text-dark">
-                        <h5 class="fw-bold mb-1">Gemütlicher Innenraum</h5>
-                        <p class="text-muted small mb-0">Genießen Sie authentische griechische Atmosphäre im Herzen von München.</p>
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-6">
-                <div class="card border-0 shadow-sm rounded-4 overflow-hidden">
-                    <img src="/static/images/bg/photo_2026-04-27_14-07-47 (2).jpg" class="card-img-top" style="height: 280px; object-fit: cover;" alt="Sommerterrasse">
-                    <div class="card-body bg-light text-dark">
-                        <h5 class="fw-bold mb-1">Sommerterrasse</h5>
-                        <p class="text-muted small mb-0">Verweilen Sie an sonnigen Tagen на unserer einladenden Außenterrasse.</p>
-                    </div>
-                </div>
+    
             </div>
         </div>
-    </section>
+    </div>
+</section>
 
-    <!-- Модальное окно галереи страниц меню -->
+<!-- Модальное окно галереи страниц меню -->
     <div class="modal fade" id="menuGalleryModal" tabindex="-1">
         <div class="modal-dialog modal-lg modal-dialog-centered">
             <div class="modal-content rounded-4 border-0 p-4 bg-dark text-white">
@@ -348,7 +224,19 @@
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body">
-                    <div id="cartItemsList" class="small text-muted mb-3">{{ t.cart_empty }}</div>
+                    <div class="alert alert-info rounded-3 p-3 mb-3 d-none" id="cartFulfillmentPrompt">
+    <div class="fw-bold small mb-2"><i class="fas fa-question-circle me-1"></i>{{ t.cart_choose_method }}</div>
+    <div class="d-flex flex-wrap gap-2">
+        <button type="button" class="btn btn-success btn-sm fw-bold" onclick="chooseCartPickup()">
+            <i class="fas fa-walking me-1"></i>{{ t.pickup_title }}
+        </button>
+        <a href="{{ links.lieferando }}" target="_blank" rel="noopener noreferrer" class="btn btn-sm fw-bold text-white" style="background:#ff8000;" onclick="copyCartToClipboard()">Lieferando</a>
+        <a href="{{ links.wolt }}" target="_blank" rel="noopener noreferrer" class="btn btn-sm fw-bold text-white" style="background:#00c2e8;" onclick="copyCartToClipboard()">Wolt</a>
+        <a href="{{ links.uber }}" target="_blank" rel="noopener noreferrer" class="btn btn-sm fw-bold text-white bg-dark" onclick="copyCartToClipboard()">Uber Eats</a>
+    </div>
+</div>
+
+<div id="cartItemsList" class="small text-muted mb-3">{{ t.cart_empty }}</div>
                     <div class="d-flex justify-content-between fw-bold text-dark border-top pt-3 mb-4">
                         <span>{{ t.total_sum }}</span>
                         <span id="cartTotalPrice">0.00 €</span>
@@ -520,6 +408,37 @@
                     <button type="button" class="btn btn-outline-secondary btn-sm fw-bold" onclick="copyReceiptText()">
                         <i class="fas fa-copy me-1"></i> Kopieren
                     </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<!-- Модальное окно карты и видео как добраться -->
+<div class="modal fade" id="mapModal" tabindex="-1">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content rounded-4 border-0 p-3 p-md-4">
+            <div class="modal-header border-0 pb-2">
+                <h5 class="modal-title fw-bold">
+                    <i class="fas fa-map-marker-alt text-danger me-2"></i>Dollmannstr. 27, 81541 München
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body pt-0">
+                <div class="ratio ratio-16x9 rounded-4 overflow-hidden border mb-3">
+                    <iframe
+                        src="https://www.google.com/maps?q=Dollmannstr.+27,+81541+M%C3%BCnchen&output=embed"
+                        loading="lazy"
+                        referrerpolicy="no-referrer-when-downgrade"
+                        title="Taverna Yamas Map">
+                    </iframe>
+                </div>
+                <h6 class="fw-bold mb-2"><i class="fas fa-video text-warning me-2"></i>Как добраться / Anfahrt</h6>
+                <div class="ratio ratio-16x9 rounded-4 overflow-hidden bg-dark border">
+                    <div class="d-flex align-items-center justify-content-center h-100 text-light p-3 text-center small">
+                        Видео-маршрут скоро будет добавлен (файл <code>static/videos/anfahrt.mp4</code>).
+                    </div>
                 </div>
             </div>
         </div>

@@ -203,7 +203,7 @@ TRANSLATIONS = {
 MENU_ITEMS = [
     {"id": 1, "name": "Gyros Plate", "desc": "Zartes Fleisch vom Spieß mit Tzatziki, Pommes und Salat.", "price": "15.90 €", "img": "/static/images/dishes/WhatsApp Image 20-04-23 at 19.26.48.jpeg", "demand": 100},
     {"id": 2, "name": "Souvlaki Spieße", "desc": "Gegrillte Fleischspieße nach traditioneller Art mit Kräutern.", "price": "14.90 €", "img": "/static/images/dishes/WhatsApp Image 202-04-23 at 19.26.48.jpeg", "demand": 95},
-    {"id": 3, "name": "Moussaka Classic", "desc": "Traditioneller Auflauf с Auberginen, Hackfleisch und Béchamelsauce.", "price": "16.20 €", "img": "/static/images/dishes/WhatsApp Image 2026-0-23 at 19.26.48.jpeg", "demand": 90},
+    {"id": 3, "name": "Moussaka Classic", "desc": "Traditioneller Auflauf mit Auberginen, Hackfleisch und Béchamelsauce.", "price": "16.20 €", "img": "/static/images/dishes/WhatsApp Image 2026-0-23 at 19.26.48.jpeg", "demand": 90},
     {"id": 4, "name": "Bifteki Feta", "desc": "Gefülltes Hacksteak mit Schafskäse, dazu aromatischer Reis.", "price": "15.50 €", "img": "/static/images/dishes/WhatsApp Image 2026-04 at 19.26.48.jpeg", "demand": 85},
     {"id": 5, "name": "Griechischer Bauernsalat", "desc": "Tomaten, Gurken, Oliven, original Schafskäse und Olivenöl.", "price": "9.90 €", "img": "/static/images/dishes/WhatsApp Image 2026-04-2 at 19.26.48.jpeg", "demand": 80},
     {"id": 6, "name": "Tzatziki & Warme Pita", "desc": "Hausgemachter Joghurtdip mit frischem Knoblauch und Pita.", "price": "5.90 €", "img": "/static/images/dishes/WhatsApp Image 2026-04-23 at 1.26.48.jpeg", "demand": 75},
@@ -238,7 +238,13 @@ TRANSLATIONS = {
     "de": {"title":"Taverna Yamas | Griechisches Restaurant in München", "subtitle":"Traditionelle griechische Küche im Herzen von München", "about_title":"Taverna Yamas München", "about_text":"Willkommen in der Taverna Yamas! Genießen Sie authentische griechische Spezialitäten, frisch zubereitete Grillgerichte und erlesene Weine in gemütlicher Atmosphäre im Herzen von München.", "address_label":"Dollmannstr. 27, 81541 München", "menu_btn":"Speisekarte öffnen", "menu_photos_btn":"Speisekarte Fotos", "menu_title":"Unsere Speisekarte", "order_btn":"Essen bestellen", "to_order":"Bestellen", "back_to_menu":"Zurück", "tables_btn":"🪑 Innen: 5/10 | Terrasse: 5/10 frei", "tables_edit":"Plätze bearbeiten", "tables_modal_title":"Tischreservierung & Verwaltung", "tables_info":"Innenbereich: 10 Tische (5 frei). Außen / Terrasse: 10 Tische (5 frei).", "date_label":"Datum", "time_label":"Uhrzeit", "persons_label":"Personenanzahl", "reserve_submit":"Verbindlich reservieren", "reserve_success":"Vielen Dank! Ihre Reservierung war erfolgreich.", "order_modal_title":"Wählen Sie Ihre Bestellmethode", "pickup_title":"Selbstabholung (-10%)", "pickup_sub":"Abholung in ca. 20–25 Min. Telefon: 089 4483787", "partners_title":"Oder über Lieferpartner:", "clipboard_copied":"Bestellung in die Zwischenablage kopiert!", "delivery_info":"Lieferinformationen", "min_order":"Mindestbestellwert:", "del_cost":"Lieferkosten:", "del_time":"Ca. Lieferzeit:", "min_unit":"Min.", "pcs_unit":"Stk.", "cart_title":"Warenkorb", "cart_empty":"Ihr Warenkorb ist leer", "total_sum":"Gesamtsumme:", "checkout_btn":"Bestellung absenden", "sidebar_header":"Information & Impressum", "toggle_tools":"🛠️ Editor-Werkzeuge umschalten", "block_btn":"+ Block", "hours_title":"Öffnungszeiten", "hours_mon":"Mo: Geschlossen", "hours_tue":"Di - Do: 11:00–14:00, 17:00–23:00", "hours_fri":"Fr - So: 11:00–23:00 (durchgehend)", "contact_venue":"Kontakt zum Restaurant", "contact_dev":"Kontakt zum Entwickler", "legal_title":"Impressum & Rechtliches (DSGVO)", "legal_name":"Taverna Yamas GmbH", "legal_address":"Dollmannstr. 27, 81541 München", "legal_tax":"Steuernummer: 145/205/01127", "privacy_policy":"Datenschutzerklärung", "dev_by":"Developed by ili key", "reserve_btn": "Reservierung", "clear_cart_btn": "Warenkorb leeren", "sort_label": "Sortieren & Filtern", "cat_food": "Essen", "cat_drinks": "Getränke", "cat_sauces": "Soßen & Dip"},
     "en": {"title":"Taverna Yamas | Greek Restaurant in Munich", "subtitle":"Traditional Greek cuisine in the heart of Munich", "about_title":"Taverna Yamas Munich", "about_text":"Welcome to Taverna Yamas! Enjoy authentic Greek specialties, freshly grilled dishes, and fine wines in a cozy atmosphere in the heart of Munich.", "address_label":"Dollmannstr. 27, 81541 München", "menu_btn":"Open Menu", "menu_photos_btn":"Menu Photos", "menu_title":"Our Menu", "order_btn":"Order Food", "to_order":"Order", "back_to_menu":"Back", "tables_btn":"🪑 Indoor: 5/10 | Terrace: 5/10 free", "tables_edit":"Edit seats", "tables_modal_title":"Table Reservation & Management", "tables_info":"Indoor: 10 tables (5 free). Terrace: 10 tables (5 free).", "date_label":"Date", "time_label":"Time", "persons_label":"Number of guests", "reserve_submit":"Book Table", "reserve_success":"Thank you! Your reservation was successful.", "order_modal_title":"Select Ordering Method", "pickup_title":"Self-Pickup (-10%)", "pickup_sub":"Ready in ~20–25 min. Phone: 089 4483787", "partners_title":"Or via delivery partners:", "clipboard_copied":"Order copied to the clipboard!", "delivery_info":"Delivery Information", "min_order":"Min. order:", "del_cost":"Delivery fee:", "del_time":"Est. delivery time:", "min_unit":"min", "pcs_unit":"pcs", "cart_title":"Cart", "cart_empty":"Your cart is empty", "total_sum":"Total:", "checkout_btn":"Send Order", "sidebar_header":"Information & Impressum", "toggle_tools":"🛠️ Toggle Editor Tools", "block_btn":"+ Block", "hours_title":"Opening Hours", "hours_mon":"Mon: Closed", "hours_tue":"Tue - Thu: 11:00–14:00, 17:00–23:00", "hours_fri":"Fri - Sun: 11:00–23:00 (non-stop)", "contact_venue":"Contact Venue", "contact_dev":"Contact Developer", "legal_title":"Impressum & Legal Info", "legal_name":"Taverna Yamas GmbH", "legal_address":"Dollmannstr. 27, 81541 München", "legal_tax":"Steuernummer: 145/205/01127", "privacy_policy":"Privacy Policy (DSGVO)", "dev_by":"Developed by ili key"},
     "ru": {"title":"Taverna Yamas | Греческий ресторан в Мюнхене", "subtitle":"Традиционная греческая кухня в сердце Мюнхена", "about_title":"Taverna Yamas München", "about_text":"Добро пожаловать в Таверну Ямас! Насладитесь аутентичными греческими блюдами и уютной атмосферой в самом сердце Мюнхена.", "address_label":"Dollmannstr. 27, 81541 München", "menu_btn":"Открыть меню", "menu_photos_btn":"Фото меню", "menu_title":"Наше меню", "order_btn":"Заказать еду", "to_order":"Заказать", "back_to_menu":"Назад", "tables_btn":"🪑 В зале: 5/10 | Терраса: 5/10 свободно", "tables_edit":"Изменить места", "tables_modal_title":"Бронирование столика и управление", "tables_info":"В зале: 10 столов (свободно 5). На террасе: 10 столов (свободно 5).", "date_label":"Дата", "time_label":"Время", "persons_label":"Количество гостей", "reserve_submit":"Забронировать столик", "reserve_success":"Спасибо! Бронирование успешно.", "order_modal_title":"Выберите способ заказа", "pickup_title":"Самовывоз (-10%)", "pickup_sub":"Готовность через ~20–25 мин. Телефон: 089 4483787", "partners_title":"Или через партнеров доставки:", "clipboard_copied":"Заказ скопирован в буфер обмена!", "delivery_info":"Информация о доставке", "min_order":"Мин. сумма:", "del_cost":"Стоимость доставки:", "del_time":"Время доставки:", "min_unit":"мин", "pcs_unit":"шт.", "cart_title":"Корзина заказа", "cart_empty":"Корзина пуста", "total_sum":"Итого к оплате:", "checkout_btn":"Оформить заказ", "sidebar_header":"Информация и Impressum", "toggle_tools":"🛠️ Включить/Выключить инструменты", "block_btn":"+ Блок", "hours_title":"График работы", "hours_mon":"Пн: Закрыто", "hours_tue":"Вт - Чт: 11:00–14:00, 17:00–23:00", "hours_fri":"Пт - Вс: 11:00–23:00 (без перерыва)", "contact_venue":"Связь с заведением", "contact_dev":"Связь с разработчиком", "legal_title":"Impressum & Юр. информация (DSGVO)", "legal_name":"Taverna Yamas GmbH", "legal_address":"Dollmannstr. 27, 81541 München", "legal_tax":"Steuernummer: 145/205/01127", "privacy_policy":"Политика конфиденциальности (DSGVO)", "dev_by":"Developed by ili key"},
-}
+        "mode_food": "Essen",
+        "mode_drinks": "Getränke",
+        "mode_pizza": "Pizza",
+        "mode_pasta": "Pasta",
+        "mode_sauces": "Soßen & Dips",
+        "cart_choose_method": "Selbstabholung (-10%) oder über Lieferplattformen bestellen?"
+    }
 
 @login_manager.user_loader
 def load_user(user_id: str):
@@ -600,7 +606,9 @@ def initialize_database():
         db.create_all()
         for entry in MENU_ITEMS:
             item_id = entry["id"]
-            if db.session.get(MenuItem, item_id) is None:
+            existing = db.session.get(MenuItem, item_id)
+            expected_img = entry.get("img") or f"/static/images/dishes/dish-{item_id}.jpg"
+            if existing is None:
                 raw_price = str(entry["price"]).replace("€", "").replace(",", ".").strip()
                 db.session.add(
                     MenuItem(
@@ -608,9 +616,11 @@ def initialize_database():
                         name=entry["name"],
                         description=entry["desc"],
                         price=Decimal(raw_price),
-                        image_url=entry.get("img") or f"/static/images/dishes/dish-{item_id}.jpg",
+                        image_url=expected_img,
                     )
                 )
+            elif not existing.image_url or not os.path.exists(os.path.join("static", existing.image_url.lstrip("/").replace("static/", "", 1))):
+                existing.image_url = expected_img
         db.session.commit()
 
 @app.cli.command("init-db")
@@ -619,6 +629,32 @@ def init_db_command():
     print("Database tables and default menu are ready.")
 
 initialize_database()
+
+
+@app.route("/map")
+def map_directions():
+    lang = session.get("lang", "de")
+    t = TRANSLATIONS.get(lang, TRANSLATIONS["de"])
+    return render_template("map.html", t=t, links=LINKS, lang=lang)
+
+
+
+@app.route('/favicon.ico')
+def favicon():
+    for candidate in ('favicon.ico', 'images/favicon.png', 'images/dishes/gyros.jpg'):
+        full_path = os.path.join(app.static_folder or 'static', candidate)
+        if os.path.isfile(full_path):
+            return send_from_directory(app.static_folder or 'static', candidate)
+    svg = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><circle cx="32" cy="32" r="30" fill="#ffc107"/><text x="32" y="42" text-anchor="middle" font-size="30" fill="#212529">Y</text></svg>'
+    return Response(svg, mimetype='image/svg+xml')
+
+
+@app.after_request
+def apply_security_headers(response):
+    response.headers.setdefault('X-Content-Type-Options', 'nosniff')
+    response.headers.setdefault('X-Frame-Options', 'SAMEORIGIN')
+    response.headers.setdefault('Referrer-Policy', 'strict-origin-when-cross-origin')
+    return response
 
 if __name__ == "__main__":
     app.run(host=os.environ.get("HOST", "0.0.0.0"),

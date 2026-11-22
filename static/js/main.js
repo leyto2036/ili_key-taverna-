@@ -1,3 +1,22 @@
+
+const __tavernaMemStorage = {};
+function tavernaStorageGet(key) {
+    try {
+        if (window.localStorage) return window.tavernaStorageGet(key);
+    } catch (e) {}
+    return Object.prototype.hasOwnProperty.call(__tavernaMemStorage, key) ? __tavernaMemStorage[key] : null;
+}
+function tavernaStorageSet(key, val) {
+    try {
+        if (window.localStorage) {
+            window.tavernaStorageSet(key, val);
+            return true;
+        }
+    } catch (e) {}
+    __tavernaMemStorage[key] = String(val);
+    return false;
+}
+
 let cart = [];
 
 function addToCart(name, priceStr) {
@@ -460,8 +479,9 @@ function applyMenuCombinedSort() {
 function goToMenuForPickup(event) {
     if (event) event.preventDefault();
     try {
-        localStorage.setItem('taverna_fulfillment', 'pickup');
+        tavernaStorageSet('taverna_fulfillment', 'pickup');
     } catch (e) {}
+
     const pickupRadio = document.getElementById('modePickup');
     if (pickupRadio) {
         pickupRadio.checked = true;
@@ -470,26 +490,41 @@ function goToMenuForPickup(event) {
     if (typeof updateCartUI === 'function') {
         updateCartUI();
     }
+
     const orderModalEl = document.getElementById('orderModal');
     if (orderModalEl && window.bootstrap) {
-        const inst = bootstrap.Modal.getInstance(orderModalEl) || new bootstrap.Modal(orderModalEl);
-        inst.hide();
+        const inst = bootstrap.Modal.getInstance(orderModalEl);
+        if (inst) inst.hide();
     }
-    const menuSec = document.getElementById('menuSection');
-    const leftCol = document.getElementById('leftColumn');
-    if (menuSec && menuSec.classList.contains('d-none')) {
-        menuSec.classList.remove('d-none');
-        if (leftCol) {
-            leftCol.classList.remove('col-lg-12');
-            leftCol.classList.add('col-lg-6');
+
+    const currentCart = Array.isArray(window.cart) ? window.cart : (typeof cart !== 'undefined' ? cart : []);
+    const hasItems = Array.isArray(currentCart) && currentCart.length > 0;
+
+    if (!hasItems) {
+        const menuSec = document.getElementById('menuSection') || document.getElementById('menuItemsGrid');
+        if (menuSec) {
+            menuSec.classList.remove('d-none');
+            menuSec.scrollIntoView({ behavior: 'smooth', block: 'start' });
         }
+        let hint = document.getElementById('pickupEmptyHint');
+        if (!hint && menuSec) {
+            hint = document.createElement('div');
+            hint.id = 'pickupEmptyHint';
+            hint.className = 'alert alert-warning fw-bold mb-3';
+            hint.textContent = 'Корзина пуста — выберите и добавьте блюда из меню для самовывоза (-10%).';
+            menuSec.prepend(hint);
+        } else if (hint) {
+            hint.classList.remove('d-none');
+        }
+        return;
     }
-    if (typeof sortMenuByDemand === 'function') {
-        sortMenuByDemand();
-    }
-    const target = menuSec || document.getElementById('menuItemsGrid');
-    if (target) {
-        target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+
+    const confirmed = window.confirm('Вы уже выбрали всё необходимое для заказа на самовывоз (-10%)?');
+    if (confirmed) {
+        const cartModalEl = document.getElementById('cartModal');
+        if (cartModalEl && window.bootstrap) {
+            bootstrap.Modal.getOrCreateInstance(cartModalEl).show();
+        }
     }
 }
 
@@ -520,7 +555,7 @@ function getDemandScore(card) {
     const name = (card.querySelector('.card-title, h5, h6')?.textContent || '').trim();
     let boosts = 0;
     try {
-        const stats = JSON.parse(localStorage.getItem('taverna_item_demand') || '{}');
+        const stats = JSON.parse(tavernaStorageGet('taverna_item_demand') || '{}');
         if (name && stats[name]) boosts = Number(stats[name]) * 10;
     } catch (e) {}
     return baseDemand + boosts;
@@ -543,4 +578,32 @@ function sortMenuByDemand() {
 
 document.addEventListener('DOMContentLoaded', () => {
     sortMenuByDemand();
+});
+
+
+function chooseCartPickup() {
+    const pickupRadio = document.getElementById('modePickup');
+    if (pickupRadio) {
+        pickupRadio.checked = true;
+        pickupRadio.dispatchEvent(new Event('change', { bubbles: true }));
+    }
+    try { tavernaStorageSet('taverna_fulfillment', 'pickup'); } catch (e) {}
+    if (typeof updateCartUI === 'function') updateCartUI();
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+    const cartModalEl = document.getElementById('cartModal');
+    if (cartModalEl) {
+        cartModalEl.addEventListener('show.bs.modal', () => {
+            const promptEl = document.getElementById('cartFulfillmentPrompt');
+            const currentCart = Array.isArray(window.cart) ? window.cart : (typeof cart !== 'undefined' ? cart : []);
+            if (promptEl) {
+                if (Array.isArray(currentCart) && currentCart.length > 0) {
+                    promptEl.classList.remove('d-none');
+                } else {
+                    promptEl.classList.add('d-none');
+                }
+            }
+        });
+    }
 });
