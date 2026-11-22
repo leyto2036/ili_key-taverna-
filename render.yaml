@@ -1,0 +1,16 @@
+# Exported from Render on 2026-11-22T22:45:30Z
+version: "1"
+projects:
+  - name: My project
+    environments:
+      - name: Production
+        services:
+          - type: web
+            name: ili_key-taverna-
+            runtime: python
+            repo: https://github.com/leyto2036/ili_key-taverna-
+            plan: free
+            region: frankfurt
+            buildCommand: pip install -r requirements.txt
+            startCommand: gunicorn app:app
+            autoDeployTrigger: commit
