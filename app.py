@@ -280,7 +280,7 @@ AUTH_TEMPLATE = """<!doctype html><html lang='en'><meta charset='utf-8'><meta na
 @app.route("/register", methods=["GET", "POST"])
 def register():
     if current_user.is_authenticated:
-        return redirect(url_for("account"))
+        return redirect(url_for('account'))
     if request.method == "POST":
         username = request.form.get("username", "").strip()
         email = request.form.get("email", "").strip().lower()
@@ -298,20 +298,20 @@ def register():
             db.session.add(user)
             db.session.commit()
             login_user(user)
-            return redirect(url_for("account"))
+            return redirect(url_for('account'))
     fields = "<label>Username <input name='username' required minlength='2' maxlength='80'></label><br><label>Email <input type='email' name='email' required maxlength='254'></label><br><label>Password <input type='password' name='password' required minlength='10' autocomplete='new-password'></label>"
     return render_template_string(AUTH_TEMPLATE, title="Create account", fields=fields, submit="Register")
 
 @app.route("/login", methods=["GET", "POST"])
 def login():
     if current_user.is_authenticated:
-        return redirect(url_for("account"))
+        return redirect(url_for('account'))
     if request.method == "POST":
         identifier = request.form.get("identifier", "").strip()
         user = User.query.filter(db.or_(User.email == identifier.lower(), User.username == identifier)).first()
         if user and user.check_password(request.form.get("password", "")):
             login_user(user, remember=bool(request.form.get("remember")))
-            return redirect(request.args.get("next") if request.args.get("next", "").startswith("/") else url_for("account"))
+            return redirect(request.args.get("next") if request.args.get("next", "").startswith("/") else url_for('account'))
         flash("Invalid username/email or password.")
     fields = "<label>Username or email <input name='identifier' required autocomplete='username'></label><br><label>Password <input type='password' name='password' required autocomplete='current-password'></label><br><label><input type='checkbox' name='remember'> Remember me</label>"
     return render_template_string(AUTH_TEMPLATE, title="Sign in", fields=fields, submit="Login")
@@ -446,7 +446,7 @@ def create_checkout():
 def payment_success(order_id):
     order = Order.query.filter_by(id=order_id, user_id=current_user.id).first_or_404()
     # A browser redirect is not proof of payment. The verified webhook updates the order.
-    return render_template_string("<h1>Payment processing</h1><p>Order #{{ order.id }} status: {{ order.payment_status }}. Please refresh your account in a moment.</p><a href='{{ url_for("account") }}'>My account</a>", order=order)
+    return render_template_string("<h1>Payment processing</h1><p>Order #{{ order.id }} status: {{ order.payment_status }}. Please refresh your account in a moment.</p><a href='{{ url_for('account') }}'>My account</a>", order=order)
 
 @app.get("/payment/cancel/<int:order_id>")
 @login_required
@@ -455,7 +455,7 @@ def payment_cancel(order_id):
     if order.payment_status != "paid":
         order.status = "payment_cancelled"
         db.session.commit()
-    return redirect(url_for("account"))
+    return redirect(url_for('account'))
 
 def valid_stripe_signature(payload: bytes, header: str, secret: str, tolerance: int = 300) -> bool:
     timestamp = None
