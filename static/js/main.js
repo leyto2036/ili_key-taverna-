@@ -462,8 +462,13 @@ function goToMenuForPickup(event) {
     try {
         localStorage.setItem('taverna_fulfillment', 'pickup');
     } catch (e) {}
-    if (typeof selectFulfillmentAndOpenCart === 'function') {
-        // Не открываем корзину сразу — ведём пользователя в меню для выбора блюд
+    const pickupRadio = document.getElementById('modePickup');
+    if (pickupRadio) {
+        pickupRadio.checked = true;
+        pickupRadio.dispatchEvent(new Event('change', { bubbles: true }));
+    }
+    if (typeof updateCartUI === 'function') {
+        updateCartUI();
     }
     const orderModalEl = document.getElementById('orderModal');
     if (orderModalEl && window.bootstrap) {
@@ -479,10 +484,34 @@ function goToMenuForPickup(event) {
             leftCol.classList.add('col-lg-6');
         }
     }
-    sortMenuByDemand();
+    if (typeof sortMenuByDemand === 'function') {
+        sortMenuByDemand();
+    }
     const target = menuSec || document.getElementById('menuItemsGrid');
     if (target) {
         target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+}
+
+function focusSection(sectionId, event) {
+    if (event) event.preventDefault();
+    if (sectionId === 'menuSection') {
+        const menuSec = document.getElementById('menuSection');
+        const leftCol = document.getElementById('leftColumn');
+        if (menuSec && menuSec.classList.contains('d-none')) {
+            menuSec.classList.remove('d-none');
+            if (leftCol) {
+                leftCol.classList.remove('col-lg-12');
+                leftCol.classList.add('col-lg-6');
+            }
+        }
+        if (typeof sortMenuByDemand === 'function') {
+            sortMenuByDemand();
+        }
+    }
+    const el = document.getElementById(sectionId);
+    if (el) {
+        el.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }
 }
 
