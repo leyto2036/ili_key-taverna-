@@ -1089,3 +1089,137 @@ document.addEventListener('DOMContentLoaded', function() {
     initCookieConsentBanner();
 });
 
+
+
+const CART_RECOVERY_TTL_MS = 2 * 60 * 1000; // 2 минуты
+const CART_RECOVERY_KEY = 'taverna_cart_recovery_v1';
+let _cartRecoveryMemory = null;
+
+function _getCurrentCartArray() {
+    if (Array.isArray(window.cart)) return window.cart;
+    if (typeof cart !== 'undefined' && Array.isArray(cart)) return cart;
+    return null;
+}
+
+function saveCartTwoMinuteBackup() {
+    const arr = _getCurrentCartArray();
+    if (!arr) return;
+    const payload = {
+        savedAt: Date.now(),
+        items: arr.map(i => ({
+            name: String(i.name || ''),
+            price: Number(i.price) || 0,
+            qty: Number(i.qty) || 1
+        })).filter(i => i.name && i.qty > 0)
+    };
+    _cartRecoveryMemory = payload;
+    try {
+        if (window.sessionStorage) {
+            window.sessionStorage.setItem(CART_RECOVERY_KEY, JSON.stringify(payload));
+        }
+    } catch (e) {}
+    try {
+        if (window.localStorage) {
+            window.localStorage.setItem(CART_RECOVERY_KEY, JSON.stringify(payload));
+        }
+    } catch (e) {}
+}
+
+function _readCartTwoMinuteBackup() {
+    let raw = '';
+    try {
+        if (window.sessionStorage) {
+            raw = window.sessionStorage.getItem(CART_RECOVERY_KEY) || '';
+        }
+    } catch (e) {}
+    if (!raw) {
+        try {
+            if (window.localStorage) {
+                raw = window.localStorage.getItem(CART_RECOVERY_KEY) || '';
+            }
+        } catch (e) {}
+    }
+    if (raw) {
+        try {
+            const parsed = JSON.parse(raw);
+            if (parsed && typeof parsed.savedAt === 'number' && Array.isArray(parsed.items)) {
+                return parsed;
+            }
+        } catch (e) {}
+    }
+    return _cartRecoveryMemory;
+}
+
+function _clearCartTwoMinuteBackup() {
+    _cartRecoveryMemory = null;
+    try { if (window.sessionStorage) window.sessionStorage.removeItem(CART_RECOVERY_KEY); } catch (e) {}
+    try { if (window.localStorage) window.localStorage.removeItem(CART_RECOVERY_KEY); } catch (e) {}
+}
+
+function restoreCartWithinTwoMinutes() {
+    const backup = _readCartTwoMinuteBackup();
+    if (!backup || typeof backup.savedAt !== 'number' || !Array.isArray(backup.items)) {
+        return false;
+    }
+    const ageMs = Date.now() - backup.savedAt;
+    if (ageMs < 0 || ageMs > CART_RECOVERY_TTL_MS) {
+        _clearCartTwoMinuteBackup();
+        return false;
+    }
+    const arr = _getCurrentCartArray();
+    if (!arr || backup.items.length === 0) return false;
+
+    arr.length = 0;
+    backup.items.forEach(i => {
+        arr.push({
+            name: String(i.name),
+            price: Number(i.price) || 0,
+            qty: Number(i.qty) || 1
+        });
+    });
+    if (Array.isArray(window.cart) && window.cart !== arr) {
+        window.cart = arr;
+    }
+    if (typeof updateCartUI === 'function') {
+        try { updateCartUI(); } catch (e) {}
+    }
+    if (typeof refreshWaitTimeBadges === 'function') {
+        try { refreshWaitTimeBadges(); } catch (e) {}
+    }
+    return true;
+}
+
+(function installTwoMinuteCartPersistence() {
+    if (window.__tavernaCart2MinInstalled) return;
+    window.__tavernaCart2MinInstalled = true;
+
+    const wrapFn = (fnName) => {
+        const orig = window[fnName];
+        if (typeof orig === 'function') {
+            window[fnName] = function(...args) {
+                const res = orig.apply(this, args);
+                saveCartTwoMinuteBackup();
+                return res;
+            };
+        }
+    };
+
+    ['addToCart', 'addBarItemToCart', 'updateCartUI', 'changeQty', 'removeFromCart', 'clearCart'].forEach(wrapFn);
+
+    window.addEventListener('beforeunload', saveCartTwoMinuteBackup);
+    window.addEventListener('pagehide', saveCartTwoMinuteBackup);
+    window.addEventListener('online', () => {
+        restoreCartWithinTwoMinutes();
+    });
+
+    document.addEventListener('DOMContentLoaded', () => {
+        restoreCartWithinTwoMinutes();
+        setInterval(() => {
+            const b = _readCartTwoMinuteBackup();
+            if (b && (Date.now() - b.savedAt) > CART_RECOVERY_TTL_MS) {
+                _clearCartTwoMinuteBackup();
+            }
+        }, 15000);
+    });
+})();
+
