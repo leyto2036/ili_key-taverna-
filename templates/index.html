@@ -344,12 +344,14 @@
                     <span><i class="fas fa-scale-balanced me-2"></i>{{ t.legal_title }}</span>
                     <i class="fas fa-chevron-down small"></i>
                 </a>
-                <div class="collapse mt-2" id="legalCollapse">
+                <div class="collapse show mt-2" id="legalCollapse">
                     <div class="p-2 bg-dark rounded border border-secondary small text-light">
                         <strong class="text-warning d-block mb-1">{{ t.legal_name }}</strong>
+                        <span class="d-block mb-1"><i class="fas fa-user-tie me-1"></i> Inhaber / Verantwortlich: [Name des Inhabers eintragen]</span>
                         <span class="d-block mb-1"><i class="fas fa-location-dot me-1"></i> {{ t.legal_address }}</span>
+                        <span class="d-block mb-1"><i class="fas fa-phone me-1"></i> Tel.: 089 4483787</span>
                         <span class="d-block mb-1"><i class="fas fa-envelope me-1"></i> info@taverna-yamas-muenchen.de</span>
-                        <span class="d-block text-warning mb-1">{{ t.legal_tax }}</span>
+                        <span class="d-block text-warning mb-1">{{ t.legal_tax }} / Steuernummer: [eintragen]</span>
                         <span class="d-block text-info border-top border-secondary pt-1 mt-1">{{ t.privacy_policy }}</span>
                     </div>
                 </div>
@@ -420,9 +422,13 @@
                     </iframe>
                 </div>
                 <h6 class="fw-bold mb-2"><i class="fas fa-video text-warning me-2"></i>Как добраться / Anfahrt</h6>
-                <div class="ratio ratio-16x9 rounded-4 overflow-hidden bg-dark border">
-                    <div class="d-flex align-items-center justify-content-center h-100 text-light p-3 text-center small">
-                        Видео-маршрут скоро будет добавлен (файл <code>static/videos/anfahrt.mp4</code>).
+                <div class="ratio ratio-16x9 rounded-4 overflow-hidden bg-dark border position-relative">
+                    <video id="anfahrtVideo" class="w-100 h-100" style="object-fit: cover;" muted autoplay loop playsinline controls preload="metadata"
+                           onerror="this.classList.add('d-none'); document.getElementById('anfahrtVideoFallback')?.classList.remove('d-none');">
+                        <source src="{{ url_for('static', filename='videos/anfahrt.mp4') }}" type="video/mp4">
+                    </video>
+                    <div id="anfahrtVideoFallback" class="d-none d-flex align-items-center justify-content-center h-100 text-light p-3 text-center small">
+                        Видео-маршрут будет показан автоматически после добавления файла <code>static/videos/anfahrt.mp4</code>.
                     </div>
                 </div>
             </div>

@@ -470,7 +470,8 @@ function applyMenuCombinedSort() {
     cards.forEach((card, idx) => {
         const isMatched = activeMenuCategories.size === 0 || activeMenuCategories.has(card.dataset.category);
         card.style.order = isMatched ? String(idx) : String(1000 + idx);
-        card.classList.toggle('opacity-50', activeMenuCategories.size > 0 && !isMatched);
+        card.classList.toggle('d-none', activeMenuCategories.size > 0 && !isMatched);
+        card.classList.remove('opacity-50');
         grid.appendChild(card);
     });
 }
