@@ -169,6 +169,22 @@ function saveBlock(id) {
     
     savedContainer.appendChild(savedCard);
     block.remove();
+
+    if (textVal.trim() || imgSrc) {
+        const csrfMeta = document.querySelector('meta[name="csrf-token"]');
+        const headers = { 'Content-Type': 'application/json' };
+        if (csrfMeta && csrfMeta.content) headers['X-CSRFToken'] = csrfMeta.content;
+
+        fetch('/api/content-blocks', {
+            method: 'POST',
+            headers,
+            body: JSON.stringify({
+                text: textVal.trim(),
+                image_url: imgSrc || null,
+                position: savedContainer.children.length
+            })
+        }).catch(() => {});
+    }
 }
 
 function makeElementDraggable(elmnt) {
@@ -238,10 +254,53 @@ function toggleTheme() {
 }
 
 function reserveTable(event) {
-    event.preventDefault();
-    alert('Vielen Dank! Ihre Reservierung war erfolgreich.');
-    let modal = bootstrap.Modal.getInstance(document.getElementById('tablesModal'));
-    modal.hide();
+    if (event) event.preventDefault();
+    const form = event ? event.target : document.querySelector('#tablesModal form');
+    const dateVal = form?.querySelector('input[type="date"], input[name="date"]')?.value || '';
+    const timeVal = form?.querySelector('input[type="time"], input[name="time"]')?.value || '';
+    const guestsVal = form?.querySelector('input[type="number"], input[name="guests"], input[name="persons"]')?.value || '2';
+    const zoneVal = form?.querySelector('select[name="zone"]')?.value || 'indoor';
+
+    const finishLocal = () => {
+        alert('Vielen Dank! Ihre Reservierung war erfolgreich.');
+        const modalEl = document.getElementById('tablesModal');
+        const modal = modalEl && window.bootstrap ? bootstrap.Modal.getInstance(modalEl) : null;
+        if (modal) modal.hide();
+    };
+
+    if (dateVal && timeVal) {
+        const csrfMeta = document.querySelector('meta[name="csrf-token"]');
+        const headers = { 'Content-Type': 'application/json' };
+        if (csrfMeta && csrfMeta.content) headers['X-CSRFToken'] = csrfMeta.content;
+
+        fetch('/api/reservations', {
+            method: 'POST',
+            headers,
+            body: JSON.stringify({
+                date: dateVal,
+                time: timeVal,
+                guests: Number(guestsVal) || 2,
+                zone: zoneVal
+            })
+        })
+        .then(async res => {
+            if (res.status === 201) {
+                finishLocal();
+                return;
+            }
+            const err = await res.json().catch(() => ({}));
+            if (res.status === 401) {
+                alert('Для сохранения бронирования в базе войдите в аккаунт (/login). Локальное подтверждение показано.');
+                finishLocal();
+                return;
+            }
+            alert(err.error || 'Не удалось сохранить бронирование на сервере.');
+        })
+        .catch(() => finishLocal());
+        return;
+    }
+
+    finishLocal();
 }
 
 function toggleMenuColumn() {
