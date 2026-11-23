@@ -61,9 +61,15 @@ function updateCartUI() {
 }
 
 function copyCartToClipboard() {
-    if (cart.length === 0) return;
-    let text = "Bestellung Taverna Yamas:\n" + cart.map(i => `- ${i.name} (x${i.qty}): ${(i.price * i.qty).toFixed(2)} €`).join('\n');
-    navigator.clipboard.writeText(text);
+    try {
+        const lines = (typeof cart !== 'undefined' && Array.isArray(cart) ? cart : []).map(
+            i => `${i.name} x${i.qty} (${(i.price * i.qty).toFixed(2)} €)`
+        );
+        const text = lines.length ? lines.join('\n') : 'Taverna Yamas Bestellung';
+        if (navigator && navigator.clipboard && typeof navigator.clipboard.writeText === 'function') {
+            navigator.clipboard.writeText(text).catch(() => {});
+        }
+    } catch (e) {}
 }
 
 function syncName(id) {
@@ -761,3 +767,325 @@ function selectModeAndJump(cat, btnEl) {
     const drawer = document.getElementById('floatingModesDrawer');
     if (drawer) drawer.classList.add('d-none');
 }
+
+
+function estimateWaitTimeMinutes(items, isPickup) {
+    if (!Array.isArray(items) || items.length === 0) {
+        return { text: '—', minMinutes: 0, maxMinutes: 0 };
+    }
+    let totalPrep = 0;
+    let totalQty = 0;
+    items.forEach(item => {
+        const name = String(item.name || '').toLowerCase();
+        const qty = Math.max(1, Number(item.qty) || 1);
+        totalQty += qty;
+        let perUnit = 16;
+        if (/pizza|пицц/i.test(name)) perUnit = 18;
+        else if (/pasta|паст|nudel/i.test(name)) perUnit = 16;
+        else if (/gyros|souvlaki|grill|teller|lamm|fisch|steak|мяс|рыб|гриль/i.test(name)) perUnit = 22;
+        else if (/drink|spritz|negroni|beer|bier|ouzo|wein|коктейл|пив|напит|sauce|соус|tzatziki|meze|закус/i.test(name)) perUnit = 8;
+        totalPrep += perUnit * qty;
+    });
+    const baseMin = Math.max(10, Math.min(45, Math.round(totalPrep / Math.max(1, totalQty * 0.85)) + (isPickup ? 0 : 5)));
+    const maxMin = baseMin + 8;
+    return { text: `~${baseMin}–${maxMin} Min.`, minMinutes: baseMin, maxMinutes: maxMin };
+}
+
+function refreshWaitTimeBadges() {
+    const isPickup = typeof getFulfillmentMode === 'function' ? (getFulfillmentMode() === 'pickup') : false;
+    const est = estimateWaitTimeMinutes(typeof cart !== 'undefined' ? cart : [], isPickup);
+    const badge = document.getElementById('cartWaitTimeBadge');
+    if (badge) badge.textContent = est.text;
+    const mockWait = document.getElementById('mockPayWaitLabel');
+    if (mockWait) mockWait.textContent = est.text;
+}
+
+function addBarItemToCart(name, price, prepMinutes, isAlcohol) {
+    const doAdd = () => {
+        if (typeof addToCart === 'function') {
+            addToCart(name, Number(price).toFixed(2));
+        }
+        if (typeof refreshWaitTimeBadges === 'function') {
+            refreshWaitTimeBadges();
+        }
+    };
+    if (isAlcohol && !_ageVerifiedDemo) {
+        openAgeVerifyModal(doAdd);
+        return;
+    }
+    doAdd();
+}
+
+function switchPlatformZone(zone) {
+    if (zone === 'bar') {
+        const barSec = document.getElementById('neighborBarSection');
+        if (barSec) barSec.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    } else {
+        const menuSec = document.getElementById('menuSection');
+        if (menuSec) menuSec.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+}
+
+function copyVenuePhone(phoneStr) {
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(phoneStr).catch(() => {});
+    }
+    alert(`Номер скопирован: ${phoneStr}`);
+}
+
+let _pendingMockOrder = null;
+
+function openMockPaymentModal() {
+    if (!cart || cart.length === 0) {
+        alert('Корзина пуста / Warenkorb ist leer');
+        return;
+    }
+    const subtotal = cart.reduce((sum, i) => sum + (i.price * i.qty), 0);
+    const isPickup = typeof getFulfillmentMode === 'function' ? (getFulfillmentMode() === 'pickup') : false;
+    const discount = isPickup ? subtotal * 0.10 : 0;
+    const total = Math.max(0, subtotal - discount);
+    const paySel = document.getElementById('paymentMethodSelect');
+    const payMethod = paySel ? paySel.value : 'Online (Demo)';
+    const est = estimateWaitTimeMinutes(cart, isPickup);
+
+    _pendingMockOrder = {
+        subtotal,
+        isPickup,
+        discount,
+        total,
+        payMethod,
+        waitText: est.text,
+        orderId: 'TY-' + String(Date.now()).slice(-6),
+        nowStr: new Date().toLocaleString('de-DE'),
+    };
+
+    const mLabel = document.getElementById('mockPayMethodLabel');
+    const dLabel = document.getElementById('mockPayDiscountLabel');
+    const wLabel = document.getElementById('mockPayWaitLabel');
+    const tLabel = document.getElementById('mockPayTotalLabel');
+    if (mLabel) mLabel.textContent = payMethod;
+    if (dLabel) dLabel.textContent = isPickup ? `-${discount.toFixed(2)} €` : '0.00 €';
+    if (wLabel) wLabel.textContent = est.text;
+    if (tLabel) tLabel.textContent = `${total.toFixed(2)} €`;
+
+    const modalEl = document.getElementById('mockPaymentModal');
+    if (modalEl && window.bootstrap) {
+        const inst = bootstrap.Modal.getOrCreateInstance(modalEl);
+        inst.show();
+    } else {
+        confirmMockPayment();
+    }
+}
+
+function confirmMockPayment() {
+    if (!_pendingMockOrder) {
+        openMockPaymentModal();
+        return;
+    }
+    const { subtotal, isPickup, discount, total, payMethod, waitText, orderId, nowStr } = _pendingMockOrder;
+    const customerName = (document.getElementById('mockCustomerName')?.value || '').trim() || 'Demo-Gast';
+    const demoEmail = 'lehanefodov@gmail.com';
+    const paymentTag = `${payMethod} [FAKE/DEMO PAID]`;
+
+    const payModalEl = document.getElementById('mockPaymentModal');
+    if (payModalEl && window.bootstrap) {
+        const inst = bootstrap.Modal.getInstance(payModalEl);
+        if (inst) inst.hide();
+    }
+
+    const orderSummaryText = [
+        `Taverna Yamas & Bar — Beleg ${orderId} (Demo-Zahlung)`,
+        `Kunde: ${customerName}`,
+        `Benachrichtigung an: ${demoEmail}`,
+        `Datum: ${nowStr}`,
+        `Art: ${isPickup ? 'Selbstabholung (-10%)' : 'Lieferung'} | Zahlung: ${paymentTag}`,
+        `Geschätzte Wartezeit: ${waitText}`,
+        `Altersbestätigung 18+: ${_ageVerifiedDemo ? 'Ja (ohne Speicherung personenbezogener Daten)' : 'Nicht erforderlich / Standard'}`,
+        ...cart.map(i => `- ${i.name} x${i.qty}: ${(i.price * i.qty).toFixed(2)} €`),
+        isPickup ? `Rabatt (-10%): -${discount.toFixed(2)} €` : null,
+        `Gesamt: ${total.toFixed(2)} €`
+    ].filter(Boolean).join('\n');
+
+    const csrfMeta = document.querySelector('meta[name="csrf-token"]');
+    const headers = { 'Content-Type': 'application/json' };
+    if (csrfMeta && csrfMeta.content) headers['X-CSRFToken'] = csrfMeta.content;
+
+    fetch('/api/demo/notify', {
+        method: 'POST',
+        headers,
+        body: JSON.stringify({
+            kind: isPickup ? 'pickup_order' : 'demo_order',
+            recipient: demoEmail,
+            order_id: orderId,
+            subtotal: subtotal.toFixed(2),
+            discount: discount.toFixed(2),
+            total: total.toFixed(2),
+            wait_time: waitText,
+            summary: orderSummaryText
+        })
+    })
+    .then(r => r.json().catch(() => ({})))
+    .then(info => {
+        if (info && info.email_sent) {
+            alert(`Демо-оплата прошла! Заказ и квитанция отправлены на ${demoEmail}. Ориентировочное ожидание: ${waitText}.`);
+        }
+    })
+    .catch(() => {});
+
+    const rowsHtml = cart.map(i =>
+        `<div class="d-flex justify-content-between mb-1"><span>${i.name} × ${i.qty}</span><strong>${(i.price * i.qty).toFixed(2)} €</strong></div>`
+    ).join('');
+
+    const htmlBody = `
+        <div class="mb-2"><strong>Beleg-Nr.:</strong> ${orderId}<br><strong>Datum:</strong> ${nowStr}<br><strong>Kunde:</strong> ${customerName}<br><strong>Taverna Yamas &amp; Bar</strong> • Dollmannstr. 27, 81541 München</div>
+        <div class="alert alert-success py-1 px-2 small mb-2">Demo-Zahlung bestätigt • Почта: <strong>${demoEmail}</strong> • Ожидание: <strong>${waitText}</strong></div>
+        <hr class="my-2">
+        <div class="mb-2"><strong>Art:</strong> ${isPickup ? 'Selbstabholung (-10%)' : 'Lieferung'}<br><strong>Zahlung:</strong> ${paymentTag}</div>${_ageVerifiedDemo ? '<br><strong>18+ Check:</strong> Отмечено (данные не сохраняются)' : ''}
+        <hr class="my-2">
+        ${rowsHtml}
+        <hr class="my-2">
+        <div class="d-flex justify-content-between small"><span>Zwischensumme</span><span>${subtotal.toFixed(2)} €</span></div>
+        ${isPickup ? `<div class="d-flex justify-content-between small text-success fw-bold"><span>Rabatt Selbstabholung (-10%)</span><span>-${discount.toFixed(2)} €</span></div>` : ''}
+        <div class="d-flex justify-content-between fs-6 fw-bold mt-1"><span>Gesamt</span><span>${total.toFixed(2)} €</span></div>
+    `;
+
+    _lastReceiptPlainText = orderSummaryText;
+    const bodyEl = document.getElementById('receiptBodyContent');
+    if (bodyEl) bodyEl.innerHTML = htmlBody;
+    const recEl = document.getElementById('receiptModal');
+    if (recEl && window.bootstrap) {
+        bootstrap.Modal.getOrCreateInstance(recEl).show();
+    }
+    _pendingMockOrder = null;
+}
+
+
+
+
+let _ageVerifiedDemo = false;
+let _pendingBarAction = null;
+
+function updateAgeBadgeUI() {
+    const badge = document.getElementById('ageStatusBadge');
+    if (!badge) return;
+    if (_ageVerifiedDemo) {
+        badge.className = 'badge bg-success text-white px-3 py-2';
+        badge.innerHTML = '<i class="fas fa-check-circle me-1"></i>18+ отмечено (без хранения данных)';
+    } else {
+        badge.className = 'badge bg-secondary text-light px-3 py-2';
+        badge.innerHTML = '<i class="fas fa-shield-halved me-1"></i>Требуется отметка 18+';
+    }
+}
+
+function openAgeVerifyModal(onVerifiedCallback) {
+    _pendingBarAction = typeof onVerifiedCallback === 'function' ? onVerifiedCallback : null;
+    const cbEl = document.getElementById('ageConfirmCheckbox');
+    if (cbEl) cbEl.checked = false;
+    const modalEl = document.getElementById('ageVerifyModal');
+    if (modalEl && window.bootstrap) {
+        bootstrap.Modal.getOrCreateInstance(modalEl).show();
+    } else {
+        confirmAgeVerification();
+    }
+}
+
+function confirmAgeVerification() {
+    const cbEl = document.getElementById('ageConfirmCheckbox');
+    if (cbEl && !cbEl.checked) {
+        alert('Отметьте, что заказчику исполнилось 18 лет.');
+        return;
+    }
+    _ageVerifiedDemo = true;
+    updateAgeBadgeUI();
+
+    const modalEl = document.getElementById('ageVerifyModal');
+    if (modalEl && window.bootstrap) {
+        const inst = bootstrap.Modal.getInstance(modalEl);
+        if (inst) inst.hide();
+    }
+
+    const action = _pendingBarAction;
+    _pendingBarAction = null;
+    if (typeof action === 'function') {
+        action();
+    }
+}
+
+function filterBarItems(category, btnEl) {
+    const cards = document.querySelectorAll('#neighborBarCards .bar-item-card');
+    cards.forEach(card => {
+        const c = card.getAttribute('data-bar-cat');
+        if (category === 'all' || c === category) {
+            card.classList.remove('d-none');
+        } else {
+            card.classList.add('d-none');
+        }
+    });
+    const btns = document.querySelectorAll('#barFilterButtons button');
+    btns.forEach(b => {
+        b.classList.remove('btn-warning', 'text-dark', 'active');
+        b.classList.add('btn-outline-warning');
+    });
+    if (btnEl) {
+        btnEl.classList.remove('btn-outline-warning');
+        btnEl.classList.add('btn-warning', 'text-dark', 'active');
+    }
+}
+
+
+
+function openDrinkPhotoPreview(src, title) {
+    const imgEl = document.getElementById('drinkPhotoImg');
+    const titleEl = document.getElementById('drinkPhotoTitle');
+    if (imgEl) imgEl.src = src;
+    if (titleEl) titleEl.textContent = title || 'Напиток';
+    const modalEl = document.getElementById('drinkPhotoModal');
+    if (modalEl && window.bootstrap) {
+        bootstrap.Modal.getOrCreateInstance(modalEl).show();
+    }
+}
+
+function setCookieConsent(mode) {
+    try {
+        localStorage.setItem('taverna_cookie_consent', mode);
+        document.cookie = 'taverna_cookie_consent=' + encodeURIComponent(mode) + '; path=/; max-age=2592000; SameSite=Lax';
+    } catch (e) {}
+    const banner = document.getElementById('cookieConsentBanner');
+    if (banner) banner.style.display = 'none';
+}
+
+function initCookieConsentBanner() {
+    let saved = '';
+    try {
+        saved = localStorage.getItem('taverna_cookie_consent') || '';
+    } catch (e) {}
+    if (!saved && typeof document.cookie === 'string') {
+        const m = document.cookie.match(/(?:^|;\s*)taverna_cookie_consent=([^;]+)/);
+        if (m) saved = decodeURIComponent(m[1]);
+    }
+    const banner = document.getElementById('cookieConsentBanner');
+    if (banner && !saved) {
+        banner.style.display = 'block';
+    }
+}
+
+function transferCartToPartner(platformName, baseUrl) {
+    const items = (typeof cart !== 'undefined' && Array.isArray(cart)) ? cart : [];
+    const lines = items.map(i => `${i.name} x${i.qty} (${(Number(i.price) * Number(i.qty)).toFixed(2)} €)`);
+    const payloadText = lines.length
+        ? `Taverna Yamas / Yamas Lounge & Bar (${platformName}):\n` + lines.join('\n')
+        : `Taverna Yamas / Yamas Lounge & Bar (${platformName})`;
+    try {
+        if (navigator && navigator.clipboard && typeof navigator.clipboard.writeText === 'function') {
+            navigator.clipboard.writeText(payloadText).catch(() => {});
+        }
+    } catch (e) {}
+    alert(`Состав заказа скопирован в буфер обмена для ${platformName} (внешние платформы не позволяют автоматически заполнить чужую корзину по ссылке — вставьте список при оформлении).`);
+    const sep = baseUrl.includes('?') ? '&' : '?';
+    window.open(`${baseUrl}${sep}utm_source=taverna_yamas&utm_medium=partner_transfer`, '_blank', 'noopener,noreferrer');
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+    initCookieConsentBanner();
+});
+

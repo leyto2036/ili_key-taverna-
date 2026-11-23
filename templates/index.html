@@ -136,6 +136,182 @@
     </div>
 </section>
 
+<!-- Отсек соседнего бара на этой же платформе -->
+<section class="container my-5" id="neighborBarSection">
+    <div class="card border-0 shadow-lg rounded-4 overflow-hidden bg-dark text-white">
+        <div class="card-body p-4 p-md-5">
+            <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4">
+                <div>
+                    <span class="badge bg-warning text-dark fw-bold mb-2"><i class="fas fa-martini-glass-citrus me-1"></i>Nachbar-Bar • Единая платформа</span>
+                    <h3 class="fw-bold m-0 text-warning">Соседний бар — Yamas Lounge &amp; Bar</h3>
+                    <p class="text-light opacity-75 small mb-0 mt-1">Рядом с таверной • Коктейли, греческие напитки и барные закуски в той же корзине (самовывоз -10%)</p>
+                </div>
+                <div class="d-flex flex-wrap gap-2 align-items-center">
+                    <span id="ageStatusBadge" class="badge bg-secondary text-light px-3 py-2">
+                        <i class="fas fa-id-card me-1"></i>18+ не подтверждён (Demo)
+                    </span>
+                    <button type="button" class="btn btn-outline-info btn-sm fw-bold" onclick="openAgeVerifyModal(null)">
+                        <i class="fas fa-user-check me-1"></i>Проверка 18+ / Документ
+                    </button>
+                    <button type="button" class="btn btn-outline-warning btn-sm fw-bold" onclick="switchPlatformZone('taverna')">
+                        <i class="fas fa-utensils me-1"></i>Зал Таверны
+                    </button>
+                    <button type="button" class="btn btn-success btn-sm fw-bold" data-bs-toggle="modal" data-bs-target="#callVenueModal">
+                        <i class="fas fa-phone-volume me-1"></i>Звонок в заведение
+                    </button>
+                </div>
+            </div>
+
+            <div class="d-flex flex-wrap gap-2 mb-4" id="barFilterButtons">
+                <button type="button" class="btn btn-sm btn-warning fw-bold text-dark active" onclick="filterBarItems('all', this)">Все позиции</button>
+                <button type="button" class="btn btn-sm btn-outline-warning fw-bold" onclick="filterBarItems('cocktails', this)">Коктейли &amp; Спиртное (18+)</button>
+                <button type="button" class="btn btn-sm btn-outline-warning fw-bold" onclick="filterBarItems('beer_wine', this)">Пиво &amp; Вино (18+)</button>
+                <button type="button" class="btn btn-sm btn-outline-warning fw-bold" onclick="filterBarItems('meze_na', this)">Барное мезе &amp; Б/А</button>
+            </div>
+
+            <div class="row g-3" id="neighborBarCards">
+                <div class="col-12 col-sm-6 col-lg-3 bar-item-card" data-bar-cat="cocktails">
+                    <div class="card h-100 bg-secondary bg-opacity-25 text-white border border-warning border-opacity-25 rounded-3">
+                        <div class="card-body d-flex flex-column justify-content-between">
+<div class="d-flex align-items-center gap-2 mb-2"><img src="https://encrypted-tbn0.gstatic.com/licensed-image?q=tbn:ANd9GcTEA47uEwaiJpi_tW3XJDC5_Q7OQKGDGZM0mwoSFlIaRDCn-4UycfO7zOq_2q032LINjkqpyx9a5SOjUPE" alt="Ouzo" class="bar-thumb-preview rounded-3 border" style="width:56px;height:56px;object-fit:cover;cursor:pointer;" onclick="openDrinkPhotoPreview(this.src, 'Ouzo')" title="Нажмите, чтобы увеличить"><span class="small text-muted">Фото напитка (нажмите для увеличения)</span></div>
+                            <div>
+                                <div class="d-flex justify-content-between align-items-start gap-2 mb-1">
+                                    <h6 class="fw-bold text-warning mb-0">Ouzo Spritz &amp; Citrus</h6>
+                                    <span class="badge bg-danger">18+</span>
+                                    <span class="badge bg-warning text-dark">8.50 €</span>
+                                </div>
+                                <p class="small text-light opacity-75 mb-2">Анисовый аперитив, свежий лимон, мята и лёд • ~8 мин</p>
+                            </div>
+                            <button type="button" class="btn btn-warning btn-sm fw-bold text-dark w-100" onclick="addBarItemToCart('Bar: Ouzo Spritz & Citrus', 8.50, 8, true)">
+                                <i class="fas fa-plus me-1"></i>В заказ
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-12 col-sm-6 col-lg-3 bar-item-card" data-bar-cat="cocktails">
+                    <div class="card h-100 bg-secondary bg-opacity-25 text-white border border-warning border-opacity-25 rounded-3">
+                        <div class="card-body d-flex flex-column justify-content-between">
+                            <div>
+                                <div class="d-flex justify-content-between align-items-start gap-2 mb-1">
+                                    <h6 class="fw-bold text-warning mb-0">Aegean Negroni</h6>
+                                    <span class="badge bg-danger">18+</span>
+                                    <span class="badge bg-warning text-dark">10.50 €</span>
+                                </div>
+                                <p class="small text-light opacity-75 mb-2">Средиземноморский джин, красный вермут, апельсиновая цедра • ~8 мин</p>
+                            </div>
+                            <button type="button" class="btn btn-warning btn-sm fw-bold text-dark w-100" onclick="addBarItemToCart('Bar: Aegean Negroni', 10.50, 8, true)">
+                                <i class="fas fa-plus me-1"></i>В заказ
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-12 col-sm-6 col-lg-3 bar-item-card" data-bar-cat="cocktails">
+                    <div class="card h-100 bg-secondary bg-opacity-25 text-white border border-warning border-opacity-25 rounded-3">
+                        <div class="card-body d-flex flex-column justify-content-between">
+                            <div>
+                                <div class="d-flex justify-content-between align-items-start gap-2 mb-1">
+                                    <h6 class="fw-bold text-warning mb-0">Metaxa 12* Sour</h6>
+                                    <span class="badge bg-danger">18+</span>
+                                    <span class="badge bg-warning text-dark">11.00 €</span>
+                                </div>
+                                <p class="small text-light opacity-75 mb-2">Греческий бренди Metaxa 12*, лимонный фреш, биттер • ~7 мин</p>
+                            </div>
+                            <button type="button" class="btn btn-warning btn-sm fw-bold text-dark w-100" onclick="addBarItemToCart('Bar: Metaxa 12* Sour', 11.00, 7, true)">
+                                <i class="fas fa-plus me-1"></i>В заказ
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-12 col-sm-6 col-lg-3 bar-item-card" data-bar-cat="cocktails">
+                    <div class="card h-100 bg-secondary bg-opacity-25 text-white border border-warning border-opacity-25 rounded-3">
+                        <div class="card-body d-flex flex-column justify-content-between">
+                            <div>
+                                <div class="d-flex justify-content-between align-items-start gap-2 mb-1">
+                                    <h6 class="fw-bold text-warning mb-0">Santorini Sunset Spritz</h6>
+                                    <span class="badge bg-danger">18+</span>
+                                    <span class="badge bg-warning text-dark">9.50 €</span>
+                                </div>
+                                <p class="small text-light opacity-75 mb-2">Игристое, персик, апельсин и базилик • ~7 мин</p>
+                            </div>
+                            <button type="button" class="btn btn-warning btn-sm fw-bold text-dark w-100" onclick="addBarItemToCart('Bar: Santorini Sunset Spritz', 9.50, 7, true)">
+                                <i class="fas fa-plus me-1"></i>В заказ
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-12 col-sm-6 col-lg-3 bar-item-card" data-bar-cat="beer_wine">
+                    <div class="card h-100 bg-secondary bg-opacity-25 text-white border border-warning border-opacity-25 rounded-3">
+                        <div class="card-body d-flex flex-column justify-content-between">
+                            <div>
+                                <div class="d-flex justify-content-between align-items-start gap-2 mb-1">
+                                    <h6 class="fw-bold text-warning mb-0">Mythos &amp; Draft Beer</h6>
+                                    <span class="badge bg-danger">18+</span>
+                                    <span class="badge bg-warning text-dark">5.20 €</span>
+                                </div>
+                                <p class="small text-light opacity-75 mb-2">Охлаждённое разливное / греческое пиво из соседнего бара • ~5 мин</p>
+                            </div>
+                            <button type="button" class="btn btn-warning btn-sm fw-bold text-dark w-100" onclick="addBarItemToCart('Bar: Mythos & Draft Beer', 5.20, 5, true)">
+                                <i class="fas fa-plus me-1"></i>В заказ
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-12 col-sm-6 col-lg-3 bar-item-card" data-bar-cat="beer_wine">
+                    <div class="card h-100 bg-secondary bg-opacity-25 text-white border border-warning border-opacity-25 rounded-3">
+                        <div class="card-body d-flex flex-column justify-content-between">
+                            <div>
+                                <div class="d-flex justify-content-between align-items-start gap-2 mb-1">
+                                    <h6 class="fw-bold text-warning mb-0">Assyrtiko Santorini (Glass)</h6>
+                                    <span class="badge bg-danger">18+</span>
+                                    <span class="badge bg-warning text-dark">7.90 €</span>
+                                </div>
+                                <p class="small text-light opacity-75 mb-2">Сухое белое греческое вино с минеральным послевкусием • ~5 мин</p>
+                            </div>
+                            <button type="button" class="btn btn-warning btn-sm fw-bold text-dark w-100" onclick="addBarItemToCart('Bar: Assyrtiko Santorini (Glass)', 7.90, 5, true)">
+                                <i class="fas fa-plus me-1"></i>В заказ
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-12 col-sm-6 col-lg-3 bar-item-card" data-bar-cat="meze_na">
+                    <div class="card h-100 bg-secondary bg-opacity-25 text-white border border-warning border-opacity-25 rounded-3">
+                        <div class="card-body d-flex flex-column justify-content-between">
+                            <div>
+                                <div class="d-flex justify-content-between align-items-start gap-2 mb-1">
+                                    <h6 class="fw-bold text-warning mb-0">Bar Meze Platter</h6>
+                                    <span class="badge bg-success">0%</span>
+                                    <span class="badge bg-warning text-dark">12.00 €</span>
+                                </div>
+                                <p class="small text-light opacity-75 mb-2">Оливки Каламата, фета с орегано, пита и тцадзики к бару • ~12 мин</p>
+                            </div>
+                            <button type="button" class="btn btn-warning btn-sm fw-bold text-dark w-100" onclick="addBarItemToCart('Bar: Bar Meze Platter', 12.00, 12, false)">
+                                <i class="fas fa-plus me-1"></i>В заказ
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-12 col-sm-6 col-lg-3 bar-item-card" data-bar-cat="meze_na">
+                    <div class="card h-100 bg-secondary bg-opacity-25 text-white border border-warning border-opacity-25 rounded-3">
+                        <div class="card-body d-flex flex-column justify-content-between">
+                            <div>
+                                <div class="d-flex justify-content-between align-items-start gap-2 mb-1">
+                                    <h6 class="fw-bold text-warning mb-0">Virgin Aegean Tonic</h6>
+                                    <span class="badge bg-success">0%</span>
+                                    <span class="badge bg-warning text-dark">6.40 €</span>
+                                </div>
+                                <p class="small text-light opacity-75 mb-2">Освежающий безалкогольный микс с огурцом, лаймом и розмарином • ~6 мин</p>
+                            </div>
+                            <button type="button" class="btn btn-warning btn-sm fw-bold text-dark w-100" onclick="addBarItemToCart('Bar: Virgin Aegean Tonic', 6.40, 6, false)">
+                                <i class="fas fa-plus me-1"></i>В заказ
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section></section>
+
 <!-- Модальное окно галереи страниц меню -->
     <div class="modal fade" id="menuGalleryModal" tabindex="-1">
         <div class="modal-dialog modal-lg modal-dialog-centered">
@@ -245,6 +421,10 @@
     <span>{{ t.pickup_title }}:</span>
     <span id="cartDiscountAmount">-0.00 €</span>
 </div>
+<div class="d-flex justify-content-between align-items-center small bg-light border rounded-3 px-2 py-2 mb-3">
+    <span class="fw-bold text-dark"><i class="fas fa-clock text-primary me-1"></i>Примерное время ожидания:</span>
+    <span id="cartWaitTimeBadge" class="badge bg-primary text-white">—</span>
+</div>
 <div class="mb-3">
     <label class="form-label small fw-bold text-dark">Онлайн-оплата / Zahlung</label>
     <select id="paymentMethodSelect" class="form-select form-select-sm">
@@ -253,7 +433,7 @@
         <option value="Bar bei Abholung / Lieferung">Оплата при получении (Bar / EC)</option>
     </select>
 </div>
-<button type="button" class="btn btn-success btn-lg w-100 fw-bold text-white mb-2" onclick="completeOrderAndGenerateReceipt()">
+<button type="button" class="btn btn-success btn-lg w-100 fw-bold text-white mb-2" onclick="openMockPaymentModal()">
     <i class="fas fa-receipt me-1"></i> {{ t.checkout_btn }} & Quittung
 </button>
 
@@ -462,6 +642,235 @@
             </button>
         </div>
     </div>
+</div>
+
+
+<!-- Модальное окно фиктивной оплаты (заглушка / демо) -->
+<div class="modal fade" id="mockPaymentModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content rounded-4 border-0 p-4">
+            <div class="modal-header border-0 pb-1">
+                <h5 class="modal-title fw-bold text-success"><i class="fas fa-credit-card me-2"></i>Демо-оплата / Zahlung (Заглушка)</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="alert alert-info py-2 px-3 small mb-3">
+                    Тестовая оплата без списания реальных средств. После подтверждения заказ уйдёт на <strong>lehanefodov@gmail.com</strong>, а клиенту откроется квитанция.
+                </div>
+                <div class="bg-light rounded-3 p-3 mb-3 small">
+                    <div class="d-flex justify-content-between mb-1"><span>Способ оплаты:</span><strong id="mockPayMethodLabel">Online</strong></div>
+                    <div class="d-flex justify-content-between mb-1"><span>Скидка самовывоза (-10%):</span><strong id="mockPayDiscountLabel" class="text-success">0.00 €</strong></div>
+                    <div class="d-flex justify-content-between mb-1"><span>Примерное время ожидания:</span><strong id="mockPayWaitLabel" class="text-primary">—</strong></div>
+                    <hr class="my-2">
+                    <div class="d-flex justify-content-between fs-6"><span>Итого к оплате (Demo):</span><strong id="mockPayTotalLabel">0.00 €</strong></div>
+                </div>
+                <div class="row g-2 mb-3">
+                    <div class="col-12">
+                        <label class="form-label small fw-bold mb-1">Имя клиента (опционально)</label>
+                        <input type="text" id="mockCustomerName" class="form-control form-control-sm" placeholder="Gast / Kunde">
+                    </div>
+                    <div class="col-7">
+                        <label class="form-label small fw-bold mb-1">Карта (тест-заглушка)</label>
+                        <input type="text" id="mockCardNumber" class="form-control form-control-sm" value="4242 •••• •••• 4242">
+                    </div>
+                    <div class="col-5">
+                        <label class="form-label small fw-bold mb-1">Срок / CVC</label>
+                        <input type="text" id="mockCardExp" class="form-control form-control-sm" value="12/29 • 424">
+                    </div>
+                </div>
+                <button type="button" class="btn btn-success w-100 fw-bold py-2" onclick="confirmMockPayment()">
+                    <i class="fas fa-check-circle me-1"></i>Оплатить (Demo) и отправить заказ на почту
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Модальное окно звонка в заведение -->
+<div class="modal fade" id="callVenueModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content rounded-4 border-0 p-4">
+            <div class="modal-header border-0 pb-1">
+                <h5 class="modal-title fw-bold text-dark"><i class="fas fa-phone-volume text-success me-2"></i>Звонок в Taverna Yamas &amp; Bar</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p class="small text-muted mb-3">Прямой контакт с заведением и соседним баром (Dollmannstr. 27, 81541 München):</p>
+                <div class="d-grid gap-2 mb-3">
+                    <a href="{{ links.phone }}" class="btn btn-success fw-bold py-2">
+                        <i class="fas fa-phone me-2"></i>Позвонить: 089 4483787
+                    </a>
+                    <button type="button" class="btn btn-outline-secondary btn-sm fw-bold" onclick="copyVenuePhone('089 4483787')">
+                        <i class="fas fa-copy me-1"></i>Скопировать номер 089 4483787
+                    </button>
+                </div>
+                <div class="bg-light rounded-3 p-3 small">
+                    <div class="fw-bold mb-1">Часы работы / Öffnungszeiten:</div>
+                    <div>{{ t.hours_mon }}</div>
+                    <div>{{ t.hours_tue }}</div>
+                    <div>{{ t.hours_fri }}</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<!-- Модальное окно подтверждения возраста 18+ (без сбора персональных данных) -->
+<div class="modal fade" id="ageVerifyModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content rounded-4 border-0 p-4">
+            <div class="modal-header border-0 pb-1">
+                <h5 class="modal-title fw-bold text-danger"><i class="fas fa-shield-halved me-2"></i>Подтверждение возраста 18+ / Altersbestätigung</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="alert alert-light border small mb-3">
+                    Персональные данные, фото паспорта или номера документов на сайте <strong>не собираются и не сохраняются</strong>. Фактическая проверка возраста может проводиться при выдаче/получении заказа.
+                </div>
+                <div class="form-check mb-3">
+                    <input class="form-check-input" type="checkbox" id="ageConfirmCheckbox">
+                    <label class="form-check-label small fw-bold" for="ageConfirmCheckbox">
+                        Подтверждаю, что мне исполнилось 18 лет (для алкогольных позиций)
+                    </label>
+                </div>
+                <div class="d-flex justify-content-end gap-2">
+                    <button type="button" class="btn btn-outline-secondary btn-sm" data-bs-dismiss="modal">Отмена</button>
+                    <button type="button" class="btn btn-success fw-bold" onclick="confirmAgeVerification()">
+                        <i class="fas fa-check me-1"></i>Подтвердить 18+
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Модальное окно звонка в заведение -->
+<div class="modal fade" id="callVenueModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content rounded-4 border-0 p-4">
+            <div class="modal-header border-0 pb-1">
+                <h5 class="modal-title fw-bold text-dark"><i class="fas fa-phone-volume text-success me-2"></i>Звонок в Taverna Yamas &amp; Bar</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p class="small text-muted mb-3">Прямой контакт с заведением и соседним баром (Dollmannstr. 27, 81541 München):</p>
+                <div class="d-grid gap-2 mb-3">
+                    <a href="{{ links.phone }}" class="btn btn-success fw-bold py-2">
+                        <i class="fas fa-phone me-2"></i>Позвонить: 089 4483787
+                    </a>
+                    <button type="button" class="btn btn-outline-secondary btn-sm fw-bold" onclick="copyVenuePhone('089 4483787')">
+                        <i class="fas fa-copy me-1"></i>Скопировать номер 089 4483787
+                    </button>
+                </div>
+                <div class="bg-light rounded-3 p-3 small">
+                    <div class="fw-bold mb-1">Часы работы / Öffnungszeiten:</div>
+                    <div>{{ t.hours_mon }}</div>
+                    <div>{{ t.hours_tue }}</div>
+                    <div>{{ t.hours_fri }}</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<!-- Модальное окно подтверждения возраста 18+ с фиктивными данными и макетом документа -->
+<div class="modal fade" id="ageVerifyModal" tabindex="-1">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content rounded-4 border-0 p-4">
+            <div class="modal-header border-0 pb-1">
+                <h5 class="modal-title fw-bold text-danger"><i class="fas fa-id-card me-2"></i>Подтверждение возраста 18+ / Altersnachweis (Demo)</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="alert alert-warning py-2 px-3 small mb-3">
+                    Для алкогольных позиций соседнего бара требуется подтверждение возраста <strong>18+</strong>. Ниже подставлены <strong>фиктивные тестовые данные и макет паспорта/ID</strong> для проверки сценария.
+                </div>
+
+                <div class="row g-3 align-items-center mb-3">
+                    <div class="col-12 col-md-6">
+                        <div class="border rounded-3 p-2 bg-light text-center">
+                            <svg viewBox="0 0 360 210" class="w-100 rounded-2 shadow-sm" style="max-height: 195px;" role="img" aria-label="Фиктивный макет документа 18+">
+                                <rect x="0" y="0" width="360" height="210" rx="12" fill="#18345e"/>
+                                <rect x="12" y="12" width="336" height="186" rx="8" fill="#eef4fc" stroke="#90b4e8" stroke-width="1.5"/>
+                                <rect x="12" y="12" width="336" height="32" rx="8" fill="#18345e"/>
+                                <text x="24" y="33" fill="#ffd43b" font-size="13" font-weight="bold" font-family="Arial, sans-serif">DEMO PASS / AUSWEIS • 18+ VERIFIED</text>
+                                <rect x="26" y="58" width="84" height="106" rx="6" fill="#cdd9ea" stroke="#6c8ab5" stroke-width="1.5"/>
+                                <circle cx="68" cy="92" r="20" fill="#5c7699"/>
+                                <path d="M38 148 C40 124, 96 124, 98 148 Z" fill="#5c7699"/>
+                                <text x="68" y="158" text-anchor="middle" fill="#18345e" font-size="9" font-weight="bold" font-family="Arial, sans-serif">MOCK PHOTO</text>
+                                <text x="124" y="74" fill="#18345e" font-size="11" font-weight="bold" font-family="Arial, sans-serif">NAME: MUSTER, MAX DEMO</text>
+                                <text x="124" y="96" fill="#2b3a4a" font-size="11" font-family="Arial, sans-serif">GEBURTSDATUM: 14.03.1992 (34 J.)</text>
+                                <text x="124" y="118" fill="#2b3a4a" font-size="11" font-family="Arial, sans-serif">DOKUMENT-NR.: DE-DEMO-849201</text>
+                                <text x="124" y="140" fill="#198754" font-size="11" font-weight="bold" font-family="Arial, sans-serif">STATUS: ALTER 18+ BESTÄTIGT</text>
+                                <rect x="124" y="150" width="204" height="22" rx="4" fill="#fff3cd" stroke="#ffc107"/>
+                                <text x="226" y="165" text-anchor="middle" fill="#664d03" font-size="10" font-weight="bold" font-family="Arial, sans-serif">NUR FÜR DEMO / TESTZWECKE</text>
+                            </svg>
+                        </div>
+                    </div>
+                    <div class="col-12 col-md-6">
+                        <div class="mb-2">
+                            <label class="form-label small fw-bold mb-1">ФИО по документу (фиктивные)</label>
+                            <input type="text" id="mockIdName" class="form-control form-control-sm" value="Max Demo Muster">
+                        </div>
+                        <div class="mb-2">
+                            <label class="form-label small fw-bold mb-1">Дата рождения</label>
+                            <input type="text" id="mockIdDob" class="form-control form-control-sm" value="14.03.1992">
+                        </div>
+                        <div class="mb-2">
+                            <label class="form-label small fw-bold mb-1">Номер паспорта / ID (заглушка)</label>
+                            <input type="text" id="mockIdNumber" class="form-control form-control-sm" value="DE-DEMO-849201">
+                        </div>
+                        <div class="form-check mt-2">
+                            <input class="form-check-input" type="checkbox" id="ageConfirmCheckbox" checked>
+                            <label class="form-check-label small fw-bold" for="ageConfirmCheckbox">
+                                Подтверждаю, что мне исполнилось 18 лет (демо-проверка)
+                            </label>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="d-flex flex-wrap gap-2 justify-content-end">
+                    <button type="button" class="btn btn-outline-secondary btn-sm fw-bold" onclick="fillPresetMockId()">
+                        <i class="fas fa-wand-magic-sparkles me-1"></i>Подставить тестовый паспорт
+                    </button>
+                    <button type="button" class="btn btn-success fw-bold" onclick="confirmAgeVerification()">
+                        <i class="fas fa-shield-check me-1"></i>Подтвердить 18+ и продолжить
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<!-- Модалка увеличения фото напитка / бутылки -->
+<div class="modal fade" id="drinkPhotoModal" tabindex="-1">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content rounded-4 border-0 p-3">
+      <div class="modal-header border-0 pb-1">
+        <h6 class="modal-title fw-bold" id="drinkPhotoTitle">Напиток</h6>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body text-center">
+        <img id="drinkPhotoImg" src="" alt="Напиток" class="img-fluid rounded-3" style="max-height:360px;object-fit:contain;">
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Баннер согласия на Cookies (DSGVO / регламент) -->
+<div id="cookieConsentBanner" class="position-fixed bottom-0 start-0 end-0 bg-dark text-white border-top border-warning p-3 shadow-lg" style="z-index:1085;display:none;">
+  <div class="container d-flex flex-column flex-md-row align-items-md-center justify-content-between gap-2">
+    <div class="small">
+      <strong>Cookies & Datenschutz:</strong> Мы используем технические настройки работы сайта и (при вашем согласии) аналитику/удобства. Персональные документы для 18+ не сохраняются.
+    </div>
+    <div class="d-flex gap-2 flex-shrink-0">
+      <button type="button" class="btn btn-outline-light btn-sm" onclick="setCookieConsent('essential')">Только необходимые</button>
+      <button type="button" class="btn btn-warning btn-sm text-dark fw-bold" onclick="setCookieConsent('all')">Принять все</button>
+    </div>
+  </div>
 </div>
 
 </body>
