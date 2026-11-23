@@ -19,13 +19,16 @@ function tavernaStorageSet(key, val) {
 
 let cart = [];
 
-function addToCart(name, priceStr) {
-    let price = parseFloat(priceStr.replace('€', '').trim());
+function addToCart(name, priceStr, itemId = null) {
+    let price = parseFloat(String(priceStr).replace('€', '').replace(',', '.').trim());
+    if (Number.isNaN(price)) price = 0;
+    const parsedId = itemId !== null && itemId !== '' && !Number.isNaN(Number(itemId)) ? Number(itemId) : null;
     let existing = cart.find(i => i.name === name);
     if (existing) {
         existing.qty += 1;
+        if (existing.id == null && parsedId != null) existing.id = parsedId;
     } else {
-        cart.push({ name, price, qty: 1 });
+        cart.push({ id: parsedId, name, price, qty: 1 });
     }
     updateCartUI();
 }
@@ -310,6 +313,40 @@ function completeOrderAndGenerateReceipt() {
     const rowsHtml = cart.map(i =>
         `<div class="d-flex justify-content-between mb-1"><span>${i.name} × ${i.qty}</span><strong>${(i.price * i.qty).toFixed(2)} €</strong></div>`
     ).join('');
+
+    const wantsOnlineStripe = /online|karte|stripe/i.test(payMethod);
+    const itemsWithDbId = cart.filter(i => i.id !== null && i.id !== undefined && !Number.isNaN(Number(i.id)));
+    if (wantsOnlineStripe && isPickup && itemsWithDbId.length === cart.length && cart.length > 0) {
+        const csrfMeta = document.querySelector('meta[name="csrf-token"]');
+        const headers = { 'Content-Type': 'application/json' };
+        if (csrfMeta && csrfMeta.content) headers['X-CSRFToken'] = csrfMeta.content;
+
+        fetch('/api/checkout', {
+            method: 'POST',
+            headers,
+            body: JSON.stringify({
+                pickup: true,
+                items: cart.map(i => ({ id: Number(i.id), quantity: Number(i.qty) }))
+            })
+        })
+        .then(async res => {
+            const payload = await res.json().catch(() => ({}));
+            if (res.status === 201 && payload.checkout_url) {
+                window.location.href = payload.checkout_url;
+                return null;
+            }
+            if (res.status === 401) {
+                alert('Для онлайн-оплаты через Stripe войдите в аккаунт (/login) или выберите оплату при получении.');
+                return null;
+            }
+            alert(payload.error || 'Онлайн-оплата Stripe ещё не настроена на сервере.');
+            return null;
+        })
+        .catch(() => {
+            alert('Не удалось связаться с сервером оплаты. Попробуйте ещё раз или выберите оплату при получении.');
+        });
+        return;
+    }
 
     const htmlBody = `
         <div class="mb-2"><strong>Beleg-Nr.:</strong> ${orderId}<br><strong>Datum:</strong> ${nowStr}<br><strong>Taverna Yamas</strong> • Dollmannstr. 27, 81541 München<br><strong>Steuernummer:</strong> 145/205/01127</div>
