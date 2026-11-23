@@ -10,6 +10,57 @@
 </head>
 <body data-theme="light">
 <div class="sticky-top bg-dark text-white border-bottom border-secondary shadow-sm py-2 px-2 px-md-3" id="stickyTopHeader" style="z-index: 1030;">
+    <div class="container-fluid d-flex flex-column gap-2">
+        <!-- Полоса 1: только название заведения на своей отдельной строке -->
+        <div class="d-flex align-items-center justify-content-center w-100">
+            <a href="{{ url_for('index') }}" class="navbar-brand fw-bold text-warning m-0 px-3 py-1 rounded-3 border border-warning bg-black bg-opacity-50 d-inline-flex align-items-center justify-content-center shadow-sm" style="font-size: 1.25rem; letter-spacing: 0.4px;">
+                <i class="fas fa-utensils me-2"></i><span>Taverna Yamas</span>
+            </a>
+        </div>
+
+        <!-- Полоса 2: доставка и выделенный самовывоз (-10%) -->
+        <div class="d-flex flex-wrap align-items-center justify-content-center gap-2" id="topOrderBar">
+            <a href="{{ links.lieferando }}" target="_blank" rel="noopener noreferrer" class="btn btn-sm fw-bold text-white px-3 py-1 rounded-2" style="background:#ff8000;">
+                <i class="fas fa-motorcycle me-1"></i>Lieferando
+            </a>
+            <a href="{{ links.wolt }}" target="_blank" rel="noopener noreferrer" class="btn btn-sm fw-bold text-white px-3 py-1 rounded-2" style="background:#00c2e8;">
+                <i class="fas fa-bolt me-1"></i>Wolt
+            </a>
+            <a href="{{ links.uber }}" target="_blank" rel="noopener noreferrer" class="btn btn-sm fw-bold text-white px-3 py-1 rounded-2 border border-light bg-secondary">
+                <i class="fas fa-car me-1"></i>Uber Eats
+            </a>
+            <button type="button" class="btn btn-sm btn-success fw-bold px-3 py-1 rounded-2 shadow-sm border border-light-subtle" onclick="goToMenuForPickup(event)">
+                <i class="fas fa-walking me-1"></i>{{ t.pickup_title }}
+            </button>
+        </div>
+
+        <!-- Полоса 3: в одну линию языки, информация, метка локации и справа 3 полоски шторки -->
+        <div class="d-flex align-items-center justify-content-between gap-2 w-100">
+            <div class="d-flex align-items-center gap-2 flex-wrap">
+                <div class="btn-group btn-group-sm" role="group" aria-label="Language switcher">
+                    <a href="{{ url_for('set_language', lang='de') }}" class="btn {{ 'btn-warning text-dark fw-bold' if lang == 'de' else 'btn-outline-light' }} py-1 px-2">DE</a>
+                    <a href="{{ url_for('set_language', lang='en') }}" class="btn {{ 'btn-warning text-dark fw-bold' if lang == 'en' else 'btn-outline-light' }} py-1 px-2">EN</a>
+                    <a href="{{ url_for('set_language', lang='ru') }}" class="btn {{ 'btn-warning text-dark fw-bold' if lang == 'ru' else 'btn-outline-light' }} py-1 px-2">RU</a>
+                </div>
+                <a href="/about" class="btn btn-sm btn-outline-info fw-bold px-2 py-1">
+                    <i class="fas fa-info-circle me-1"></i><span>{{ t.about_title if t.about_title else 'Information' }}</span>
+                </a>
+                <button type="button" class="btn btn-sm btn-light rounded-circle p-1 d-inline-flex align-items-center justify-content-center shadow-sm"
+                        style="width: 30px; height: 30px;"
+                        data-bs-toggle="modal" data-bs-target="#mapModal"
+                        title="Dollmannstr. 27, 81541 München">
+                    <span style="color:#d91e18; font-size:1rem; line-height:1;"><i class="fas fa-map-marker-alt"></i></span>
+                </button>
+            </div>
+
+            <button class="btn btn-sm btn-outline-warning ms-auto" type="button" data-bs-toggle="offcanvas" data-bs-target="#sidebar" aria-label="Menu drawer">
+                <i class="fas fa-bars"></i>
+            </button>
+        </div>
+    </div>
+</div>
+
+
     <div class="container-fluid d-flex flex-wrap align-items-center justify-content-between gap-2">
         <!-- Отдельный блок логотипа и названия заведения -->
         <div class="d-flex align-items-center gap-2">
