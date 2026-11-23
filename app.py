@@ -747,6 +747,90 @@ def apply_security_headers(response):
     response.headers.setdefault('Referrer-Policy', 'strict-origin-when-cross-origin')
     return response
 
+
+# --- 24/7 Menu Availability & Quiet Missing Video Handler ---
+import json as _json
+from flask import request as _request, jsonify as _jsonify
+
+_AVAILABILITY_FILE = os.path.join(os.path.dirname(os.path.abspath(__file__)), "instance", "out_of_stock.json")
+_MEMORY_OUT_OF_STOCK = []
+
+def _load_out_of_stock():
+    global _MEMORY_OUT_OF_STOCK
+    try:
+        if os.path.exists(_AVAILABILITY_FILE):
+            with open(_AVAILABILITY_FILE, "r", encoding="utf-8") as fp:
+                data = _json.load(fp)
+                if isinstance(data, list):
+                    _MEMORY_OUT_OF_STOCK = [str(x).strip() for x in data if str(x).strip()]
+    except Exception:
+        pass
+    return list(dict.fromkeys(_MEMORY_OUT_OF_STOCK))
+
+def _save_out_of_stock(items):
+    global _MEMORY_OUT_OF_STOCK
+    cleaned = []
+    seen = set()
+    for x in items:
+        s = str(x).strip()
+        if s and s.lower() not in seen:
+            seen.add(s.lower())
+            cleaned.append(s)
+    _MEMORY_OUT_OF_STOCK = cleaned
+    try:
+        os.makedirs(os.path.dirname(_AVAILABILITY_FILE), exist_ok=True)
+        with open(_AVAILABILITY_FILE, "w", encoding="utf-8") as fp:
+            _json.dump(cleaned, fp, ensure_ascii=False, indent=2)
+    except Exception:
+        pass
+    return cleaned
+
+_load_out_of_stock()
+
+@app.route("/static/videos/anfahrt.mp4", methods=["GET", "HEAD"])
+def _quiet_missing_anfahrt_video():
+    video_path = os.path.join(app.static_folder or "static", "videos", "anfahrt.mp4")
+    if os.path.exists(video_path):
+        from flask import send_from_directory
+        return send_from_directory(os.path.join(app.static_folder or "static", "videos"), "anfahrt.mp4")
+    return ("", 204)
+
+@app.route("/api/menu/availability", methods=["GET"])
+def api_get_menu_availability():
+    items = _load_out_of_stock()
+    return _jsonify({"ok": True, "out_of_stock": items})
+
+@app.route("/api/staff/availability", methods=["POST"])
+def api_update_menu_availability():
+    expected_token = os.environ.get("STAFF_API_TOKEN", "").strip()
+    provided_token = (
+        _request.headers.get("X-Staff-Token", "").strip()
+        or ((_request.get_json(silent=True) or {}).get("token", "") if _request.is_json else "")
+    )
+    if not expected_token or provided_token != expected_token:
+        return _jsonify({"ok": False, "error": "Unauthorized"}), 401
+
+    payload = _request.get_json(silent=True) or {}
+    action = str(payload.get("action", "mark_out")).strip().lower()
+    current = _load_out_of_stock()
+
+    if action == "clear":
+        updated = _save_out_of_stock([])
+    elif action == "set":
+        raw_list = payload.get("items") or []
+        updated = _save_out_of_stock(raw_list if isinstance(raw_list, list) else [])
+    elif action == "mark_in":
+        target = str(payload.get("item", "")).strip().lower()
+        updated = _save_out_of_stock([x for x in current if x.lower() != target])
+    else:
+        item_name = str(payload.get("item", "")).strip()
+        if not item_name:
+            return _jsonify({"ok": False, "error": "Missing item name"}), 400
+        updated = _save_out_of_stock(current + [item_name])
+
+    return _jsonify({"ok": True, "out_of_stock": updated})
+
+
 if __name__ == "__main__":
     app.run(host=os.environ.get("HOST", "0.0.0.0"),
             port=int(os.environ.get("PORT", "5000")),

@@ -1232,3 +1232,61 @@ const TAVERNA_TAX_INFO = {
     tseSeriennummer: '883ECE8AA6B2B4AC70E3E678C2E2CD08E7ED171C8BD7A4BB6C088437B7EC0DB5'
 };
 
+
+
+let _tavernaOutOfStock = [];
+
+function _isItemOutOfStock(name) {
+    const n = String(name || '').trim().toLowerCase();
+    if (!n) return false;
+    return _tavernaOutOfStock.some(o => String(o).trim().toLowerCase() === n);
+}
+
+function applyOutOfStockStateToDom(outList) {
+    _tavernaOutOfStock = Array.isArray(outList) ? outList : [];
+    const cardsOrButtons = document.querySelectorAll('[data-dish-name], [data-item-name], .menu-item, .bar-item, .dish-card, button');
+    cardsOrButtons.forEach(el => {
+        const explicitName = el.getAttribute('data-dish-name') || el.getAttribute('data-item-name') || '';
+        const text = (explicitName || el.textContent || '').trim();
+        if (!text) return;
+        const matched = _tavernaOutOfStock.find(o => text.toLowerCase().includes(String(o).trim().toLowerCase()));
+        if (el.tagName === 'BUTTON' && (el.onclick || (el.getAttribute('onclick') || '').includes('Cart') || (el.getAttribute('onclick') || '').includes('cart'))) {
+            const parentCard = el.closest('.card, .menu-item, .bar-item, .dish-card, li, .col, .col-md-6, .col-lg-4');
+            const cardText = (parentCard ? parentCard.textContent : '') + ' ' + explicitName;
+            const isOut = _tavernaOutOfStock.some(o => cardText.toLowerCase().includes(String(o).trim().toLowerCase()));
+            if (isOut) {
+                if (!el.dataset.origHtml) el.dataset.origHtml = el.innerHTML;
+                el.disabled = true;
+                el.classList.add('disabled', 'opacity-50');
+                el.innerHTML = 'Нет в наличии / Ausverkauft';
+            } else if (el.dataset.origHtml) {
+                el.disabled = false;
+                el.classList.remove('disabled', 'opacity-50');
+                el.innerHTML = el.dataset.origHtml;
+                delete el.dataset.origHtml;
+            }
+        }
+        if (matched && el.tagName !== 'BUTTON') {
+            el.setAttribute('data-out-of-stock', '1');
+        } else if (el.hasAttribute('data-out-of-stock')) {
+            el.removeAttribute('data-out-of-stock');
+        }
+    });
+}
+
+async function fetchTavernaAvailability() {
+    try {
+        const resp = await fetch('/api/menu/availability', { cache: 'no-store' });
+        if (!resp.ok) return;
+        const data = await resp.json();
+        if (data && data.ok) {
+            applyOutOfStockStateToDom(data.out_of_stock || []);
+        }
+    } catch (e) {}
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+    fetchTavernaAvailability();
+    setInterval(fetchTavernaAvailability, 20000);
+});
+
