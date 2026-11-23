@@ -122,3 +122,17 @@ footer { background: #111; color: #bbb; font-size: 0.9rem; }
         font-size: 0.85rem;
     }
 }
+
+.floating-modes-nav {
+    position: fixed;
+    left: 0;
+    top: 52%;
+    transform: translateY(-50%);
+    z-index: 1040;
+}
+.floating-modes-drawer {
+    position: absolute;
+    left: 6px;
+    top: 100%;
+    min-width: 155px;
+}

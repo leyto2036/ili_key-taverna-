@@ -9,7 +9,57 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
 </head>
 <body data-theme="light">
-<div class="sticky-top bg-dark text-white border-bottom border-secondary shadow-sm py-2 px-3" id="stickyTopHeader" style="z-index: 1030;">
+<div class="sticky-top bg-dark text-white border-bottom border-secondary shadow-sm py-2 px-2 px-md-3" id="stickyTopHeader" style="z-index: 1030;">
+    <div class="container-fluid d-flex flex-wrap align-items-center justify-content-between gap-2">
+        <!-- Отдельный блок логотипа и названия заведения -->
+        <div class="d-flex align-items-center gap-2">
+            <a href="{{ url_for('index') }}" class="navbar-brand fw-bold text-warning m-0 px-3 py-1 rounded-3 border border-warning bg-black bg-opacity-50 d-inline-flex align-items-center shadow-sm" style="font-size: 1.2rem; letter-spacing: 0.4px;">
+                <i class="fas fa-utensils me-2"></i><span>Taverna Yamas</span>
+            </a>
+            <button type="button" class="btn btn-sm btn-light rounded-circle p-1 d-inline-flex align-items-center justify-content-center shadow-sm"
+                    style="width: 34px; height: 34px;"
+                    data-bs-toggle="modal" data-bs-target="#mapModal"
+                    title="Dollmannstr. 27, 81541 München">
+                <span style="color:#d91e18; font-size:1.1rem; line-height:1;"><i class="fas fa-map-marker-alt"></i></span>
+            </button>
+        </div>
+
+        <!-- Логотипы доставки и отдельно выделенный самовывоз (-10%) -->
+        <div class="d-flex flex-wrap align-items-center justify-content-center gap-2" id="topOrderBar">
+            <div class="d-flex flex-wrap align-items-center gap-1 bg-black bg-opacity-35 p-1 rounded-3 border border-secondary">
+                <a href="{{ links.lieferando }}" target="_blank" rel="noopener noreferrer" class="btn btn-sm fw-bold text-white px-3 py-1 rounded-2" style="background:#ff8000;">
+                    <i class="fas fa-motorcycle me-1"></i>Lieferando
+                </a>
+                <a href="{{ links.wolt }}" target="_blank" rel="noopener noreferrer" class="btn btn-sm fw-bold text-white px-3 py-1 rounded-2" style="background:#00c2e8;">
+                    <i class="fas fa-bolt me-1"></i>Wolt
+                </a>
+                <a href="{{ links.uber }}" target="_blank" rel="noopener noreferrer" class="btn btn-sm fw-bold text-white px-3 py-1 rounded-2 border border-light bg-secondary">
+                    <i class="fas fa-car me-1"></i>Uber Eats
+                </a>
+            </div>
+            <button type="button" class="btn btn-success fw-bold px-3 py-2 rounded-3 shadow border border-light-subtle" style="font-size: 0.95rem;" onclick="goToMenuForPickup(event)">
+                <i class="fas fa-walking me-1"></i>{{ t.pickup_title }}
+            </button>
+        </div>
+
+        <!-- Языковая панель и навигация -->
+        <div class="d-flex align-items-center gap-1 gap-md-2">
+            <div class="btn-group btn-group-sm" role="group" aria-label="Language switcher">
+                <a href="{{ url_for('set_language', lang='de') }}" class="btn {{ 'btn-warning text-dark fw-bold' if lang == 'de' else 'btn-outline-light' }} py-1 px-2">DE</a>
+                <a href="{{ url_for('set_language', lang='en') }}" class="btn {{ 'btn-warning text-dark fw-bold' if lang == 'en' else 'btn-outline-light' }} py-1 px-2">EN</a>
+                <a href="{{ url_for('set_language', lang='ru') }}" class="btn {{ 'btn-warning text-dark fw-bold' if lang == 'ru' else 'btn-outline-light' }} py-1 px-2">RU</a>
+            </div>
+            <a href="/about" class="btn btn-sm btn-outline-info fw-bold px-2 py-1">
+                <i class="fas fa-store me-1"></i><span class="d-none d-sm-inline">Taverna Yamas München</span><span class="d-sm-none">Info</span>
+            </a>
+            <button class="btn btn-sm btn-outline-warning" type="button" data-bs-toggle="offcanvas" data-bs-target="#sidebar">
+                <i class="fas fa-bars"></i>
+            </button>
+        </div>
+    </div>
+</div>
+
+
     <div class="container-fluid d-flex flex-wrap align-items-center justify-content-between gap-2">
         <div class="d-flex align-items-center gap-2">
             <a href="{{ url_for('index') }}" class="navbar-brand fw-bold text-warning m-0 px-2 py-1 rounded-3 border border-warning-subtle d-inline-flex align-items-center" style="font-size: 1.25rem; letter-spacing: 0.4px;">
@@ -85,33 +135,9 @@
 <section class="container my-4" id="menuSection">
     <div class="bg-white p-3 p-md-4 rounded-4 shadow-sm text-dark border">
         <div class="row g-3 align-items-start">
-            <div class="col-12 col-lg-3 mb-3" id="menuModesLeftPanel">
-    <div class="bg-white p-3 rounded-4 shadow-sm border text-dark sticky-top" style="top: 76px; z-index: 10;">
-        <div class="fw-bold mb-2 d-flex align-items-center justify-content-between">
-            <span><i class="fas fa-sliders-h text-warning me-2"></i>{{ t.sort_label }}</span>
-            <span class="badge bg-light text-dark border"><i class="fas fa-sort-amount-down"></i></span>
-        </div>
-        <div class="d-flex flex-column gap-2" id="menuCategoryFilters">
-            <button type="button" class="btn btn-sm btn-outline-warning text-dark fw-bold text-start menu-cat-btn" data-cat="food" onclick="toggleMenuCategory('food', this)">
-                <i class="fas fa-utensils me-2"></i>{{ t.mode_food }}
-            </button>
-            <button type="button" class="btn btn-sm btn-outline-warning text-dark fw-bold text-start menu-cat-btn" data-cat="drinks" onclick="toggleMenuCategory('drinks', this)">
-                <i class="fas fa-tint me-2"></i>{{ t.mode_drinks }}
-            </button>
-            <button type="button" class="btn btn-sm btn-outline-warning text-dark fw-bold text-start menu-cat-btn" data-cat="pizza" onclick="toggleMenuCategory('pizza', this)">
-                <i class="fas fa-pizza-slice me-2"></i>{{ t.mode_pizza }}
-            </button>
-            <button type="button" class="btn btn-sm btn-outline-warning text-dark fw-bold text-start menu-cat-btn" data-cat="pasta" onclick="toggleMenuCategory('pasta', this)">
-                <i class="fas fa-bacon me-2"></i>{{ t.mode_pasta }}
-            </button>
-            <button type="button" class="btn btn-sm btn-outline-warning text-dark fw-bold text-start menu-cat-btn" data-cat="sauces" onclick="toggleMenuCategory('sauces', this)">
-                <i class="fas fa-mortar-pestle me-2"></i>{{ t.mode_sauces }}
-            </button>
-        </div>
-    </div>
-</div>
+            </div>
 
-            <div class="col-12 col-lg-9">
+            <div class="col-12">
                 
         <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-3">
             <h3 class="fw-bold m-0">{{ t.menu_title }}</h3>
@@ -441,6 +467,33 @@
                     </div>
                 </div>
             </div>
+        </div>
+    </div>
+</div>
+
+<div id="floatingModesNav" class="floating-modes-nav">
+    <button type="button" class="btn btn-warning text-dark fw-bold shadow-lg rounded-end-4 px-2 py-2 d-flex align-items-center gap-1"
+            onclick="toggleFloatingModesDrawer()" title="Режимы / Kategorien">
+        <i class="fas fa-compass"></i>
+        <span class="small d-none d-md-inline">{{ t.sort_label }}</span>
+    </button>
+    <div id="floatingModesDrawer" class="floating-modes-drawer bg-white text-dark rounded-4 shadow-lg border p-2 mt-1 d-none">
+        <div class="d-flex flex-column gap-1" id="menuCategoryFilters">
+            <button type="button" class="btn btn-sm btn-outline-warning text-dark fw-bold text-start menu-cat-btn" data-cat="food" onclick="selectModeAndJump('food', this)">
+                <i class="fas fa-utensils me-2"></i>{{ t.mode_food or ('Еда' if lang == 'ru' else ('Food' if lang == 'en' else 'Essen')) }}
+            </button>
+            <button type="button" class="btn btn-sm btn-outline-warning text-dark fw-bold text-start menu-cat-btn" data-cat="drinks" onclick="selectModeAndJump('drinks', this)">
+                <i class="fas fa-tint me-2"></i>{{ t.mode_drinks or ('Напитки' if lang == 'ru' else ('Drinks' if lang == 'en' else 'Getränke')) }}
+            </button>
+            <button type="button" class="btn btn-sm btn-outline-warning text-dark fw-bold text-start menu-cat-btn" data-cat="pizza" onclick="selectModeAndJump('pizza', this)">
+                <i class="fas fa-pizza-slice me-2"></i>{{ t.mode_pizza or ('Пицца' if lang == 'ru' else ('Pizza' if lang == 'en' else 'Pizza')) }}
+            </button>
+            <button type="button" class="btn btn-sm btn-outline-warning text-dark fw-bold text-start menu-cat-btn" data-cat="pasta" onclick="selectModeAndJump('pasta', this)">
+                <i class="fas fa-bacon me-2"></i>{{ t.mode_pasta or ('Паста' if lang == 'ru' else ('Pasta' if lang == 'en' else 'Pasta')) }}
+            </button>
+            <button type="button" class="btn btn-sm btn-outline-warning text-dark fw-bold text-start menu-cat-btn" data-cat="sauces" onclick="selectModeAndJump('sauces', this)">
+                <i class="fas fa-mortar-pestle me-2"></i>{{ t.mode_sauces or ('Соусы' if lang == 'ru' else ('Sauces' if lang == 'en' else 'Soßen')) }}
+            </button>
         </div>
     </div>
 </div>

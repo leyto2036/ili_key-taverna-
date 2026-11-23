@@ -607,3 +607,21 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 });
+
+
+function toggleFloatingModesDrawer() {
+    const drawer = document.getElementById('floatingModesDrawer');
+    if (drawer) drawer.classList.toggle('d-none');
+}
+function selectModeAndJump(cat, btnEl) {
+    if (typeof toggleMenuCategory === 'function') {
+        toggleMenuCategory(cat, btnEl);
+    }
+    const menuSec = document.getElementById('menuSection');
+    if (menuSec) {
+        menuSec.classList.remove('d-none');
+        menuSec.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+    const drawer = document.getElementById('floatingModesDrawer');
+    if (drawer) drawer.classList.add('d-none');
+}
