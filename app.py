@@ -12,8 +12,9 @@ from functools import wraps
 from pathlib import Path
 
 import requests
-from flask import (Flask, abort, flash, jsonify, redirect, render_template
-                   render_template_string, request, session, url_for)
+from flask import (Flask, abort, flash, jsonify, redirect, render_template,
+                   render_template_string,
+                   send_from_directory, request, session, url_for)
 from flask_login import (LoginManager, current_user, login_required, login_user,
                          logout_user)
 from flask_wtf.csrf import CSRFProtect, generate_csrf
