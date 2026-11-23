@@ -60,48 +60,6 @@
 </div>
 
 
-    <div class="container-fluid d-flex flex-wrap align-items-center justify-content-between gap-2">
-        <div class="d-flex align-items-center gap-2">
-            <a href="{{ url_for('index') }}" class="navbar-brand fw-bold text-warning m-0 px-2 py-1 rounded-3 border border-warning-subtle d-inline-flex align-items-center" style="font-size: 1.25rem; letter-spacing: 0.4px;">
-                <i class="fas fa-utensils me-2"></i><span>Taverna Yamas</span>
-            </a>
-            <button type="button" class="btn btn-sm btn-light rounded-circle p-1 d-inline-flex align-items-center justify-content-center shadow-sm"
-                    style="width: 34px; height: 34px;"
-                    data-bs-toggle="modal" data-bs-target="#mapModal"
-                    title="Dollmannstr. 27, 81541 München">
-                <span style="color:#d91e18; font-size:1.1rem; line-height:1;"><i class="fas fa-map-marker-alt"></i></span>
-            </button>
-        </div>
-
-        <div class="d-flex flex-wrap align-items-center justify-content-center gap-2" id="topOrderBar">
-            <a href="{{ links.lieferando }}" target="_blank" rel="noopener noreferrer" class="btn fw-bold text-white px-4 py-2 rounded-3 shadow-sm" style="background:#ff8000; font-size: 1rem;">
-                <i class="fas fa-motorcycle me-2"></i>Lieferando
-            </a>
-            <a href="{{ links.wolt }}" target="_blank" rel="noopener noreferrer" class="btn fw-bold text-white px-4 py-2 rounded-3 shadow-sm" style="background:#00c2e8; font-size: 1rem;">
-                <i class="fas fa-bolt me-2"></i>Wolt
-            </a>
-            <a href="{{ links.uber }}" target="_blank" rel="noopener noreferrer" class="btn fw-bold text-white px-4 py-2 rounded-3 border border-light bg-secondary shadow-sm" style="font-size: 1rem;">
-                <i class="fas fa-car me-2"></i>Uber Eats
-            </a>
-            <button type="button" class="btn btn-success fw-bold px-4 py-2 rounded-3 shadow-sm" style="font-size: 1rem;" onclick="goToMenuForPickup(event)">
-                <i class="fas fa-walking me-2"></i>{{ t.pickup_title }}
-            </button>
-        </div>
-
-        <div class="d-flex align-items-center gap-2">
-            <a href="{{ url_for('set_language', lang='de') }}" class="btn btn-sm {{ 'btn-warning text-dark fw-bold' if lang == 'de' else 'btn-outline-light' }} py-1 px-2">DE</a>
-            <a href="{{ url_for('set_language', lang='en') }}" class="btn btn-sm {{ 'btn-warning text-dark fw-bold' if lang == 'en' else 'btn-outline-light' }} py-1 px-2">EN</a>
-            <a href="{{ url_for('set_language', lang='ru') }}" class="btn btn-sm {{ 'btn-warning text-dark fw-bold' if lang == 'ru' else 'btn-outline-light' }} py-1 px-2">RU</a>
-            <a href="/about" class="btn btn-sm btn-outline-info fw-bold px-3 py-1">
-                <i class="fas fa-store me-1"></i>Taverna Yamas München
-            </a>
-            <button class="btn btn-sm btn-outline-warning" type="button" data-bs-toggle="offcanvas" data-bs-target="#sidebar">
-                <i class="fas fa-bars"></i>
-            </button>
-        </div>
-    </div>
-</div>
-
 <!-- Навигация -->
 <!-- Шапка -->
     <header class="hero" id="heroHeader">
