@@ -366,6 +366,50 @@ def reservation_availability():
     return jsonify(date=day.isoformat(), indoor_free=max(0, 10 - occupied["indoor"]),
                    terrace_free=max(0, 10 - occupied["terrace"]))
 
+
+DEMO_NOTIFY_EMAIL = os.environ.get("DEMO_NOTIFY_EMAIL", "lehanefodov@gmail.com")
+
+def _send_demo_email(subject: str, body: str, recipient: str = DEMO_NOTIFY_EMAIL) -> bool:
+    smtp_host = os.environ.get("SMTP_HOST", "").strip()
+    if not smtp_host:
+        return False
+    try:
+        import smtplib
+        from email.message import EmailMessage
+
+        smtp_port = int(os.environ.get("SMTP_PORT", "587"))
+        smtp_user = os.environ.get("SMTP_USER", "").strip()
+        smtp_pass = os.environ.get("SMTP_PASSWORD", "")
+        smtp_from = os.environ.get("SMTP_FROM", smtp_user or f"noreply@taverna-yamas.demo")
+
+        msg = EmailMessage()
+        msg["Subject"] = subject
+        msg["From"] = smtp_from
+        msg["To"] = recipient
+        msg.set_content(body)
+
+        with smtplib.SMTP(smtp_host, smtp_port, timeout=10) as server:
+            server.starttls()
+            if smtp_user:
+                server.login(smtp_user, smtp_pass)
+            server.send_message(msg)
+        return True
+    except Exception as exc:
+        app.logger.warning("Demo SMTP send failed: %s", exc)
+        return False
+
+@app.post("/api/demo/notify")
+def demo_notify():
+    data = request.get_json(silent=True) or request.form or {}
+    kind = str(data.get("kind", "order")).strip()
+    recipient = DEMO_NOTIFY_EMAIL
+    summary = str(data.get("summary", "")).strip()[:4000]
+    subject = f"[Taverna Yamas Demo] {'Tischreservierung' if kind == 'reservation' else 'Selbstabholung (-10%)'}"
+    body = summary or f"Demo event ({kind}) received at {datetime.now(timezone.utc).isoformat()}"
+    sent_smtp = _send_demo_email(subject, body, recipient)
+    app.logger.info("Demo notify (%s) -> %s | smtp_sent=%s", kind, recipient, sent_smtp)
+    return jsonify(ok=True, recipient=recipient, smtp_sent=sent_smtp), 200
+
 @app.get("/api/csrf-token")
 def csrf_token_endpoint():
     return jsonify(csrf_token=generate_csrf())

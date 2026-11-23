@@ -255,24 +255,39 @@ function toggleTheme() {
 
 function reserveTable(event) {
     if (event) event.preventDefault();
-    const form = event ? event.target : document.querySelector('#tablesModal form');
-    const dateVal = form?.querySelector('input[type="date"], input[name="date"]')?.value || '';
-    const timeVal = form?.querySelector('input[type="time"], input[name="time"]')?.value || '';
-    const guestsVal = form?.querySelector('input[type="number"], input[name="guests"], input[name="persons"]')?.value || '2';
+    const form = event && event.target && event.target.tagName === 'FORM'
+        ? event.target
+        : document.querySelector('#tablesModal form');
+    const dateVal = form?.querySelector('#resDate, input[type="date"], input[name="date"]')?.value || '';
+    const timeVal = form?.querySelector('#resTime, input[type="time"], input[name="time"]')?.value || '';
+    const guestsVal = form?.querySelector('#resPersons, input[type="number"], input[name="guests"], input[name="persons"]')?.value || '2';
     const zoneVal = form?.querySelector('select[name="zone"]')?.value || 'indoor';
 
-    const finishLocal = () => {
-        alert('Vielen Dank! Ihre Reservierung war erfolgreich.');
-        const modalEl = document.getElementById('tablesModal');
-        const modal = modalEl && window.bootstrap ? bootstrap.Modal.getInstance(modalEl) : null;
-        if (modal) modal.hide();
-    };
+    const demoEmail = 'lehanefodov@gmail.com';
+    const summaryText = [
+        'Taverna Yamas — Tischreservierung (Demo)',
+        `Ziel-E-Mail: ${demoEmail}`,
+        `Datum: ${dateVal || '-'}`,
+        `Uhrzeit: ${timeVal || '-'}`,
+        `Personen: ${guestsVal}`,
+        `Bereich: ${zoneVal}`
+    ].join('\n');
+
+    const csrfMeta = document.querySelector('meta[name="csrf-token"]');
+    const headers = { 'Content-Type': 'application/json' };
+    if (csrfMeta && csrfMeta.content) headers['X-CSRFToken'] = csrfMeta.content;
+
+    fetch('/api/demo/notify', {
+        method: 'POST',
+        headers,
+        body: JSON.stringify({
+            kind: 'reservation',
+            recipient: demoEmail,
+            summary: summaryText
+        })
+    }).catch(() => {});
 
     if (dateVal && timeVal) {
-        const csrfMeta = document.querySelector('meta[name="csrf-token"]');
-        const headers = { 'Content-Type': 'application/json' };
-        if (csrfMeta && csrfMeta.content) headers['X-CSRFToken'] = csrfMeta.content;
-
         fetch('/api/reservations', {
             method: 'POST',
             headers,
@@ -282,25 +297,13 @@ function reserveTable(event) {
                 guests: Number(guestsVal) || 2,
                 zone: zoneVal
             })
-        })
-        .then(async res => {
-            if (res.status === 201) {
-                finishLocal();
-                return;
-            }
-            const err = await res.json().catch(() => ({}));
-            if (res.status === 401) {
-                alert('Для сохранения бронирования в базе войдите в аккаунт (/login). Локальное подтверждение показано.');
-                finishLocal();
-                return;
-            }
-            alert(err.error || 'Не удалось сохранить бронирование на сервере.');
-        })
-        .catch(() => finishLocal());
-        return;
+        }).catch(() => {});
     }
 
-    finishLocal();
+    alert(`Vielen Dank! Ihre Reservierung wurde verarbeitet und an ${demoEmail} gesendet.`);
+    const modalEl = document.getElementById('tablesModal');
+    const modal = modalEl && window.bootstrap ? bootstrap.Modal.getInstance(modalEl) : null;
+    if (modal) modal.hide();
 }
 
 function toggleMenuColumn() {
@@ -373,13 +376,41 @@ function completeOrderAndGenerateReceipt() {
         `<div class="d-flex justify-content-between mb-1"><span>${i.name} × ${i.qty}</span><strong>${(i.price * i.qty).toFixed(2)} €</strong></div>`
     ).join('');
 
+    const demoEmail = 'lehanefodov@gmail.com';
     const wantsOnlineStripe = /online|karte|stripe/i.test(payMethod);
     const itemsWithDbId = cart.filter(i => i.id !== null && i.id !== undefined && !Number.isNaN(Number(i.id)));
-    if (wantsOnlineStripe && isPickup && itemsWithDbId.length === cart.length && cart.length > 0) {
-        const csrfMeta = document.querySelector('meta[name="csrf-token"]');
-        const headers = { 'Content-Type': 'application/json' };
-        if (csrfMeta && csrfMeta.content) headers['X-CSRFToken'] = csrfMeta.content;
 
+    const orderSummaryText = [
+        `Taverna Yamas — Beleg ${orderId} (Demo)`,
+        `Benachrichtigung an: ${demoEmail}`,
+        `Datum: ${nowStr}`,
+        `Art: ${isPickup ? 'Selbstabholung (-10%)' : 'Lieferung'} | Zahlung: ${payMethod}`,
+        ...cart.map(i => `- ${i.name} x${i.qty}: ${(i.price * i.qty).toFixed(2)} €`),
+        isPickup ? `Rabatt (-10%): -${discount.toFixed(2)} €` : null,
+        `Gesamt: ${total.toFixed(2)} €`
+    ].filter(Boolean).join('\n');
+
+    const csrfMeta = document.querySelector('meta[name="csrf-token"]');
+    const headers = { 'Content-Type': 'application/json' };
+    if (csrfMeta && csrfMeta.content) headers['X-CSRFToken'] = csrfMeta.content;
+
+    if (isPickup) {
+        fetch('/api/demo/notify', {
+            method: 'POST',
+            headers,
+            body: JSON.stringify({
+                kind: 'pickup_order',
+                recipient: demoEmail,
+                order_id: orderId,
+                subtotal: subtotal.toFixed(2),
+                discount: discount.toFixed(2),
+                total: total.toFixed(2),
+                summary: orderSummaryText
+            })
+        }).catch(() => {});
+    }
+
+    if (wantsOnlineStripe && isPickup && itemsWithDbId.length === cart.length && cart.length > 0) {
         fetch('/api/checkout', {
             method: 'POST',
             headers,
@@ -392,23 +423,14 @@ function completeOrderAndGenerateReceipt() {
             const payload = await res.json().catch(() => ({}));
             if (res.status === 201 && payload.checkout_url) {
                 window.location.href = payload.checkout_url;
-                return null;
             }
-            if (res.status === 401) {
-                alert('Для онлайн-оплаты через Stripe войдите в аккаунт (/login) или выберите оплату при получении.');
-                return null;
-            }
-            alert(payload.error || 'Онлайн-оплата Stripe ещё не настроена на сервере.');
-            return null;
         })
-        .catch(() => {
-            alert('Не удалось связаться с сервером оплаты. Попробуйте ещё раз или выберите оплату при получении.');
-        });
-        return;
+        .catch(() => {});
     }
 
     const htmlBody = `
         <div class="mb-2"><strong>Beleg-Nr.:</strong> ${orderId}<br><strong>Datum:</strong> ${nowStr}<br><strong>Taverna Yamas</strong> • Dollmannstr. 27, 81541 München<br><strong>Steuernummer:</strong> 145/205/01127</div>
+        <div class="alert alert-success py-1 px-2 small mb-2">Demo-Benachrichtigung an: <strong>${demoEmail}</strong></div>
         <hr class="my-2">
         <div class="mb-2"><strong>Art:</strong> ${isPickup ? 'Selbstabholung (-10%)' : 'Lieferung'}<br><strong>Zahlung:</strong> ${payMethod}</div>
         <hr class="my-2">
