@@ -550,7 +550,15 @@
             </p>
             <small class="text-warning fw-bold d-block mt-2" style="font-size: 0.85rem; letter-spacing: 1px;">{{ t.dev_by }}</small>
         </div>
-    </footer>
+    
+<!-- Актуальные налоговые и кассовые данные по чеку (Steuernummer / TSE) -->
+<div id="tavernaReceiptTaxMeta" class="small text-muted mt-3 pt-2 border-top">
+  <div><strong>Steuernummer:</strong> 145/205/01127 &nbsp;|&nbsp; <strong>MwSt. (A):</strong> 19%</div>
+  <div><strong>Kassenseriennummer:</strong> WO-3ED7FA44AF2EA20FFBA23DA4F38</div>
+  <div class="text-break"><strong>TSE-Seriennummer:</strong> 883ECE8AA6B2B4AC70E3E678C2E2CD08E7ED171C8BD7A4BB6C088437B7EC0DB5</div>
+</div>
+
+</footer>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script src="{{ url_for('static', filename='js/main.js') }}"></script>

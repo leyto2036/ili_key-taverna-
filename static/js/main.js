@@ -1223,3 +1223,12 @@ function restoreCartWithinTwoMinutes() {
     });
 })();
 
+
+
+const TAVERNA_TAX_INFO = {
+    steuernummer: '145/205/01127',
+    mwstRate: 0.19,
+    kassenseriennummer: 'WO-3ED7FA44AF2EA20FFBA23DA4F38',
+    tseSeriennummer: '883ECE8AA6B2B4AC70E3E678C2E2CD08E7ED171C8BD7A4BB6C088437B7EC0DB5'
+};
+
