@@ -277,16 +277,6 @@ function reserveTable(event) {
     const headers = { 'Content-Type': 'application/json' };
     if (csrfMeta && csrfMeta.content) headers['X-CSRFToken'] = csrfMeta.content;
 
-    fetch('/api/demo/notify', {
-        method: 'POST',
-        headers,
-        body: JSON.stringify({
-            kind: 'reservation',
-            recipient: demoEmail,
-            summary: summaryText
-        })
-    }).catch(() => {});
-
     if (dateVal && timeVal) {
         fetch('/api/reservations', {
             method: 'POST',
@@ -300,7 +290,28 @@ function reserveTable(event) {
         }).catch(() => {});
     }
 
-    alert(`Vielen Dank! Ihre Reservierung wurde verarbeitet und an ${demoEmail} gesendet.`);
+    fetch('/api/demo/notify', {
+        method: 'POST',
+        headers,
+        body: JSON.stringify({
+            kind: 'reservation',
+            recipient: demoEmail,
+            summary: summaryText
+        })
+    })
+    .then(r => r.json().catch(() => ({})))
+    .then(info => {
+        if (info && info.email_sent) {
+            alert(`Vielen Dank! Reservierung wurde real an ${demoEmail} gesendet.`);
+        } else {
+            const mailtoUrl = `mailto:${demoEmail}?subject=${encodeURIComponent('Taverna Yamas Demo — Tischreservierung')}&body=${encodeURIComponent(summaryText)}`;
+            alert(`Бронь зафиксирована. Реальная отправка почты на ${demoEmail} сработает автоматически после добавления RESEND_API_KEY или SMTP_* в окружение. Можно также открыть почтовый клиент: ${mailtoUrl}`);
+        }
+    })
+    .catch(() => {
+        alert(`Reservierung erfasst (${demoEmail}).`);
+    });
+
     const modalEl = document.getElementById('tablesModal');
     const modal = modalEl && window.bootstrap ? bootstrap.Modal.getInstance(modalEl) : null;
     if (modal) modal.hide();

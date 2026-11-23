@@ -370,34 +370,70 @@ def reservation_availability():
 
 DEMO_NOTIFY_EMAIL = os.environ.get("DEMO_NOTIFY_EMAIL", "lehanefodov@gmail.com")
 
-def _send_demo_email(subject: str, body: str, recipient: str = DEMO_NOTIFY_EMAIL) -> bool:
+def _send_demo_email(subject: str, body: str, recipient: str = DEMO_NOTIFY_EMAIL) -> tuple[bool, str, str]:
+    resend_key = os.environ.get("RESEND_API_KEY", "").strip()
+    if resend_key:
+        try:
+            resend_from = os.environ.get("RESEND_FROM", "Taverna Yamas Demo <onboarding@resend.dev>").strip()
+            resp = requests.post(
+                "https://api.resend.com/emails",
+                headers={
+                    "Authorization": f"Bearer {resend_key}",
+                    "Content-Type": "application/json",
+                },
+                json={
+                    "from": resend_from,
+                    "to": [recipient],
+                    "subject": subject,
+                    "text": body,
+                },
+                timeout=12,
+            )
+            if 200 <= resp.status_code < 300:
+                return True, "resend", ""
+            err_msg = f"Resend HTTP {resp.status_code}: {resp.text[:200]}"
+            app.logger.warning("Demo Resend send failed: %s", err_msg)
+            return False, "resend", err_msg
+        except Exception as exc:
+            err_msg = str(exc)[:200]
+            app.logger.warning("Demo Resend exception: %s", err_msg)
+            return False, "resend", err_msg
+
     smtp_host = os.environ.get("SMTP_HOST", "").strip()
-    if not smtp_host:
-        return False
-    try:
-        import smtplib
-        from email.message import EmailMessage
+    if smtp_host:
+        try:
+            import smtplib
+            from email.message import EmailMessage
 
-        smtp_port = int(os.environ.get("SMTP_PORT", "587"))
-        smtp_user = os.environ.get("SMTP_USER", "").strip()
-        smtp_pass = os.environ.get("SMTP_PASSWORD", "")
-        smtp_from = os.environ.get("SMTP_FROM", smtp_user or f"noreply@taverna-yamas.demo")
+            smtp_port = int(os.environ.get("SMTP_PORT", "587"))
+            smtp_user = os.environ.get("SMTP_USER", "").strip()
+            smtp_pass = os.environ.get("SMTP_PASSWORD", "")
+            smtp_from = os.environ.get("SMTP_FROM", smtp_user or "noreply@taverna-yamas.demo")
 
-        msg = EmailMessage()
-        msg["Subject"] = subject
-        msg["From"] = smtp_from
-        msg["To"] = recipient
-        msg.set_content(body)
+            msg = EmailMessage()
+            msg["Subject"] = subject
+            msg["From"] = smtp_from
+            msg["To"] = recipient
+            msg.set_content(body)
 
-        with smtplib.SMTP(smtp_host, smtp_port, timeout=10) as server:
-            server.starttls()
-            if smtp_user:
-                server.login(smtp_user, smtp_pass)
-            server.send_message(msg)
-        return True
-    except Exception as exc:
-        app.logger.warning("Demo SMTP send failed: %s", exc)
-        return False
+            if smtp_port == 465:
+                with smtplib.SMTP_SSL(smtp_host, smtp_port, timeout=12) as server:
+                    if smtp_user:
+                        server.login(smtp_user, smtp_pass)
+                    server.send_message(msg)
+            else:
+                with smtplib.SMTP(smtp_host, smtp_port, timeout=12) as server:
+                    server.starttls()
+                    if smtp_user:
+                        server.login(smtp_user, smtp_pass)
+                    server.send_message(msg)
+            return True, "smtp", ""
+        except Exception as exc:
+            err_msg = str(exc)[:200]
+            app.logger.warning("Demo SMTP send failed: %s", err_msg)
+            return False, "smtp", err_msg
+
+    return False, "unconfigured", "Set RESEND_API_KEY or SMTP_HOST/SMTP_PORT/SMTP_USER/SMTP_PASSWORD for live email delivery."
 
 @app.post("/api/demo/notify")
 def demo_notify():
@@ -407,9 +443,16 @@ def demo_notify():
     summary = str(data.get("summary", "")).strip()[:4000]
     subject = f"[Taverna Yamas Demo] {'Tischreservierung' if kind == 'reservation' else 'Selbstabholung (-10%)'}"
     body = summary or f"Demo event ({kind}) received at {datetime.now(timezone.utc).isoformat()}"
-    sent_smtp = _send_demo_email(subject, body, recipient)
-    app.logger.info("Demo notify (%s) -> %s | smtp_sent=%s", kind, recipient, sent_smtp)
-    return jsonify(ok=True, recipient=recipient, smtp_sent=sent_smtp), 200
+    email_sent, channel, error_detail = _send_demo_email(subject, body, recipient)
+    app.logger.info("Demo notify (%s) -> %s | sent=%s via %s", kind, recipient, email_sent, channel)
+    return jsonify(
+        ok=True,
+        recipient=recipient,
+        email_sent=email_sent,
+        channel=channel,
+        subject=subject,
+        error=error_detail,
+    ), 200
 
 @app.get("/api/csrf-token")
 def csrf_token_endpoint():
