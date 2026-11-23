@@ -69,11 +69,15 @@
         <div class="bg-white rounded-4 shadow-sm p-3 p-md-4 border">
             <h3 class="fw-bold mb-2"><i class="fas fa-video text-warning me-2"></i>Как добраться / Anfahrt</h3>
             <p class="text-muted small mb-3">Видео-маршрут до Taverna Yamas (Dollmannstr. 27, 81541 München).</p>
-            <div class="ratio ratio-16x9 rounded-4 overflow-hidden bg-dark border">
-                <video controls preload="metadata" class="w-100 h-100">
+            <div class="ratio ratio-16x9 rounded-4 overflow-hidden bg-dark border position-relative">
+                <video id="mapAnfahrtVideo" muted autoplay loop playsinline controls preload="metadata" class="w-100 h-100"
+                       style="object-fit: cover;"
+                       onerror="this.classList.add('d-none'); document.getElementById('mapAnfahrtFallback')?.classList.remove('d-none');">
                     <source src="{{ url_for('static', filename='videos/anfahrt.mp4') }}" type="video/mp4">
-                    Видео-маршрут скоро будет добавлен в /static/videos/anfahrt.mp4.
                 </video>
+                <div id="mapAnfahrtFallback" class="d-none d-flex align-items-center justify-content-center h-100 text-light p-3 text-center small">
+                    Видео-маршрут будет показан автоматически после добавления файла <code>static/videos/anfahrt.mp4</code>.
+                </div>
             </div>
         </div>
     </main>

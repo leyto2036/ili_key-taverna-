@@ -628,7 +628,10 @@ def init_db_command():
     initialize_database()
     print("Database tables and default menu are ready.")
 
-initialize_database()
+try:
+    initialize_database()
+except Exception as exc:
+    app.logger.warning("Startup DB initialization skipped/deferred: %s", exc)
 
 
 @app.route("/map")
