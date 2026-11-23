@@ -613,14 +613,20 @@ function toggleFloatingModesDrawer() {
     const drawer = document.getElementById('floatingModesDrawer');
     if (drawer) drawer.classList.toggle('d-none');
 }
+
 function selectModeAndJump(cat, btnEl) {
-    if (typeof toggleMenuCategory === 'function') {
-        toggleMenuCategory(cat, btnEl);
-    }
     const menuSec = document.getElementById('menuSection');
     if (menuSec) {
         menuSec.classList.remove('d-none');
-        menuSec.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+    if (typeof toggleMenuCategory === 'function') {
+        toggleMenuCategory(cat, btnEl);
+    }
+    const targetEl = menuSec || document.getElementById('menuCategoryFilters');
+    if (targetEl) {
+        const headerOffset = (document.getElementById('stickyTopHeader')?.offsetHeight || 90) + 12;
+        const y = targetEl.getBoundingClientRect().top + window.scrollY - headerOffset;
+        window.scrollTo({ top: Math.max(0, y), behavior: 'smooth' });
     }
     const drawer = document.getElementById('floatingModesDrawer');
     if (drawer) drawer.classList.add('d-none');
