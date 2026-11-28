@@ -5,3 +5,5 @@ venv/
 .backup_update/
 __pycache__/
 *.pyc
+.env
+.backup_logo_yamas/

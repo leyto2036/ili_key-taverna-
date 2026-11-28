@@ -1,4 +1,19 @@
 
+function yamasGetLang() {
+    const htmlLang = (document.documentElement && document.documentElement.lang || '').toLowerCase();
+    if (['de', 'en', 'ru'].includes(htmlLang)) return htmlLang;
+    const saved = (window.sessionStorage && sessionStorage.getItem('yamas_lang')) || (window.localStorage && localStorage.getItem('yamas_lang')) || '';
+    if (['de', 'en', 'ru'].includes(saved.toLowerCase())) return saved.toLowerCase();
+    return 'de';
+}
+function yamasT(deText, enText, ruText) {
+    const l = yamasGetLang();
+    if (l === 'ru') return ruText;
+    if (l === 'en') return enText;
+    return deText;
+}
+
+
 const __tavernaMemStorage = {};
 function tavernaStorageGet(key) {
     try {
@@ -126,13 +141,13 @@ function addMovableBlock() {
         <div class="d-flex justify-content-between align-items-center mb-2">
             <span class="fw-bold text-primary small"><i class="fas fa-arrows-alt me-1"></i> Блок описания</span>
             <div class="d-flex gap-1">
-                <button class="btn btn-sm btn-success fw-bold px-2 py-0" onclick="saveBlock(${blockCounter})" title="Сохранить блок"><i class="fas fa-check me-1"></i> Сохранить</button>
+                <button class="btn btn-sm btn-success fw-bold px-2 py-0" onclick="saveBlock(${blockCounter})" title="${yamasT('Block speichern', 'Save block', 'Сохранить блок')}"><i class="fas fa-check me-1"></i> Сохранить</button>
                 <button class="btn btn-sm btn-outline-danger py-0 px-2" onclick="this.closest('.movable-block').remove()"><i class="fas fa-times"></i></button>
             </div>
         </div>
         <div class="clearfix">
             <img src="" class="block-preview-img float-start me-3 mb-2 rounded border" style="max-width: 150px; display: none;" alt="Preview">
-            <textarea class="form-control mb-2" rows="3" placeholder="Введите текст описания..."></textarea>
+            <textarea class="form-control mb-2" rows="3" placeholder="${yamasT('Beschreibungstext eingeben...', 'Enter description text...', 'Введите текст описания...')}"></textarea>
             <input type="file" class="form-control form-control-sm block-file-input" accept="image/*" onchange="previewBlockImage(event, ${blockCounter})">
         </div>
     `;
@@ -377,7 +392,7 @@ let _lastReceiptPlainText = '';
 
 function completeOrderAndGenerateReceipt() {
     if (!cart || cart.length === 0) {
-        alert('Корзина пуста / Warenkorb ist leer');
+        alert(yamasT('Warenkorb ist leer', 'Cart is empty', 'Корзина пуста'));
         return;
     }
     const subtotal = cart.reduce((sum, i) => sum + (i.price * i.qty), 0);
@@ -647,7 +662,7 @@ function goToMenuForPickup(event) {
             hint = document.createElement('div');
             hint.id = 'pickupEmptyHint';
             hint.className = 'alert alert-warning fw-bold mb-3';
-            hint.textContent = 'Корзина пуста — выберите и добавьте блюда из меню для самовывоза (-10%).';
+            hint.textContent = yamasT('Warenkorb ist leer — wählen Sie Gerichte aus dem Menü für die Abholung (-10%).', 'Cart is empty — select and add dishes from the menu for pickup (-10%).', 'Корзина пуста — выберите и добавьте блюда из меню для самовывоза (-10%).');
             menuSec.prepend(hint);
         } else if (hint) {
             hint.classList.remove('d-none');
@@ -655,7 +670,7 @@ function goToMenuForPickup(event) {
         return;
     }
 
-    const confirmed = window.confirm('Вы уже выбрали всё необходимое для заказа на самовывоз (-10%)?');
+    const confirmed = window.confirm(yamasT('Haben Sie bereits alles für die Abholung (-10%) ausgewählt?', 'Have you already selected everything needed for pickup (-10%)?', 'Вы уже выбрали всё необходимое для заказа на самовывоз (-10%)?'));
     if (confirmed) {
         const cartModalEl = document.getElementById('cartModal');
         if (cartModalEl && window.bootstrap) {
@@ -830,14 +845,12 @@ function copyVenuePhone(phoneStr) {
     if (navigator.clipboard && navigator.clipboard.writeText) {
         navigator.clipboard.writeText(phoneStr).catch(() => {});
     }
-    alert(`Номер скопирован: ${phoneStr}`);
+    alert(yamasT(`Nummer kopiert: ${phoneStr}`, `Number copied: ${phoneStr}`, `Номер скопирован: ${phoneStr}`));
 }
-
-let _pendingMockOrder = null;
 
 function openMockPaymentModal() {
     if (!cart || cart.length === 0) {
-        alert('Корзина пуста / Warenkorb ist leer');
+        alert(yamasT('Warenkorb ist leer', 'Cart is empty', 'Корзина пуста'));
         return;
     }
     const subtotal = cart.reduce((sum, i) => sum + (i.price * i.qty), 0);
@@ -927,7 +940,7 @@ function confirmMockPayment() {
     .then(r => r.json().catch(() => ({})))
     .then(info => {
         if (info && info.email_sent) {
-            alert(`Демо-оплата прошла! Заказ и квитанция отправлены на ${demoEmail}. Ориентировочное ожидание: ${waitText}.`);
+            alert(yamasT(`Demo-Zahlung erfolgreich! Bestellung und Beleg an ${demoEmail} gesendet. Voraussichtliche Wartezeit: ${waitText}.`, `Demo payment succeeded! Order and receipt sent to ${demoEmail}. Estimated wait: ${waitText}.`, `Демо-оплата прошла! Заказ и квитанция отправлены на ${demoEmail}. Ориентировочное ожидание: ${waitText}.`));
         }
     })
     .catch(() => {});
@@ -956,6 +969,20 @@ function confirmMockPayment() {
     if (recEl && window.bootstrap) {
         bootstrap.Modal.getOrCreateInstance(recEl).show();
     }
+        try {
+            if (typeof cart !== 'undefined' && Array.isArray(cart)) {
+                cart.length = 0;
+            } else {
+                cart = [];
+            }
+            window.cart = cart;
+            ['taverna_cart', 'taverna_cart_backup', 'taverna_cart_ts', 'cart'].forEach(k => {
+                try { localStorage.removeItem(k); } catch (e) {}
+                try { sessionStorage.removeItem(k); } catch (e) {}
+            });
+            if (typeof updateCartUI === 'function') updateCartUI();
+            if (typeof syncDishQtyBadges === 'function') syncDishQtyBadges();
+        } catch (e) {}
     _pendingMockOrder = null;
 }
 
@@ -970,10 +997,10 @@ function updateAgeBadgeUI() {
     if (!badge) return;
     if (_ageVerifiedDemo) {
         badge.className = 'badge bg-success text-white px-3 py-2';
-        badge.innerHTML = '<i class="fas fa-check-circle me-1"></i>18+ отмечено (без хранения данных)';
+        badge.innerHTML = `<i class="fas fa-check-circle me-1"></i>${yamasT('18+ bestätigt (ohne Datenspeicherung)', '18+ confirmed (no data stored)', '18+ отмечено (без хранения данных)')}`;
     } else {
         badge.className = 'badge bg-secondary text-light px-3 py-2';
-        badge.innerHTML = '<i class="fas fa-shield-halved me-1"></i>Требуется отметка 18+';
+        badge.innerHTML = `<i class="fas fa-shield-halved me-1"></i>${yamasT('18+-Bestätigung erforderlich', '18+ confirmation required', 'Требуется отметка 18+')}`;
     }
 }
 
@@ -992,7 +1019,7 @@ function openAgeVerifyModal(onVerifiedCallback) {
 function confirmAgeVerification() {
     const cbEl = document.getElementById('ageConfirmCheckbox');
     if (cbEl && !cbEl.checked) {
-        alert('Отметьте, что заказчику исполнилось 18 лет.');
+        alert(yamasT('Bitte bestätigen Sie, dass der Besteller mindestens 18 Jahre alt ist.', 'Please confirm that the customer is at least 18 years old.', 'Отметьте, что заказчику исполнилось 18 лет.'));
         return;
     }
     _ageVerifiedDemo = true;
@@ -1038,7 +1065,7 @@ function openDrinkPhotoPreview(src, title) {
     const imgEl = document.getElementById('drinkPhotoImg');
     const titleEl = document.getElementById('drinkPhotoTitle');
     if (imgEl) imgEl.src = src;
-    if (titleEl) titleEl.textContent = title || 'Напиток';
+    if (titleEl) titleEl.textContent = title || yamasT('Getränk', 'Drink', 'Напиток');
     const modalEl = document.getElementById('drinkPhotoModal');
     if (modalEl && window.bootstrap) {
         bootstrap.Modal.getOrCreateInstance(modalEl).show();
@@ -1258,7 +1285,7 @@ function applyOutOfStockStateToDom(outList) {
                 if (!el.dataset.origHtml) el.dataset.origHtml = el.innerHTML;
                 el.disabled = true;
                 el.classList.add('disabled', 'opacity-50');
-                el.innerHTML = 'Нет в наличии / Ausverkauft';
+                el.innerHTML = yamasT('Ausverkauft', 'Sold out', 'Нет в наличии');
             } else if (el.dataset.origHtml) {
                 el.disabled = false;
                 el.classList.remove('disabled', 'opacity-50');
@@ -1290,3 +1317,112 @@ document.addEventListener('DOMContentLoaded', () => {
     setInterval(fetchTavernaAvailability, 20000);
 });
 
+
+
+
+
+(function hardenTavernaCartFunctions() {
+    if (window.__tavernaCartHardened) return;
+    window.__tavernaCartHardened = true;
+
+    function _setTextIfExists(id, text) {
+        const el = document.getElementById(id);
+        if (el) el.innerText = text;
+    }
+
+    window.addToCart = function(name, priceStr, itemId = null) {
+        if (typeof cart === 'undefined' || !Array.isArray(cart)) {
+            window.cart = window.cart || [];
+        }
+        const targetCart = (typeof cart !== 'undefined' && Array.isArray(cart)) ? cart : window.cart;
+        let cleaned = String(priceStr ?? '0').replace('€', '').replace(',', '.').replace(/[^0-9.-]/g, '').trim();
+        let price = parseFloat(cleaned);
+        if (Number.isNaN(price)) price = 0;
+
+        const parsedId = (itemId !== null && itemId !== '' && !Number.isNaN(Number(itemId))) ? Number(itemId) : null;
+        const cleanName = String(name || yamasT('Gericht', 'Dish', 'Блюдо')).trim();
+
+        const existing = targetCart.find(i => i && i.name === cleanName);
+        if (existing) {
+            existing.qty = (Number(existing.qty) || 1) + 1;
+            if (existing.id == null && parsedId != null) existing.id = parsedId;
+        } else {
+            targetCart.push({ id: parsedId, name: cleanName, price, qty: 1 });
+        }
+        window.cart = targetCart;
+
+        if (typeof updateCartUI === 'function') {
+            updateCartUI();
+        }
+    };
+
+    const _rawUpdateCartUI = typeof updateCartUI === 'function' ? updateCartUI : null;
+    window.updateCartUI = function() {
+        const targetCart = (typeof cart !== 'undefined' && Array.isArray(cart)) ? cart : (Array.isArray(window.cart) ? window.cart : []);
+        const totalQty = targetCart.reduce((sum, i) => sum + (Number(i.qty) || 0), 0);
+        const totalPrice = targetCart.reduce((sum, i) => sum + ((Number(i.price) || 0) * (Number(i.qty) || 0)), 0);
+
+        _setTextIfExists('floatingCartCount', String(totalQty));
+        _setTextIfExists('floatingCartSum', totalPrice.toFixed(2) + ' €');
+        _setTextIfExists('cartTotalPrice', totalPrice.toFixed(2) + ' €');
+
+        const list = document.getElementById('cartItemsList');
+        if (list) {
+            if (targetCart.length === 0) {
+                list.innerHTML = yamasT('Ihr Warenkorb ist leer', 'Your cart is empty', 'Ваша корзина пуста');
+            } else {
+                list.innerHTML = targetCart.map(i => `
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <span>${i.name} (x${i.qty})</span>
+                        <strong>${((Number(i.price) || 0) * (Number(i.qty) || 0)).toFixed(2)} €</strong>
+                    </div>
+                `).join('');
+            }
+        }
+
+        if (_rawUpdateCartUI) {
+            try { _rawUpdateCartUI(); } catch (e) {}
+        }
+    };
+
+    window.addBarItemToCart = function(name, price, prepMinutes, isAlcohol) {
+        const doAdd = () => {
+            const numPrice = Number(price);
+            const priceFormatted = Number.isNaN(numPrice) ? '0.00' : numPrice.toFixed(2);
+            window.addToCart(name, priceFormatted);
+            if (typeof refreshWaitTimeBadges === 'function') {
+                try { refreshWaitTimeBadges(); } catch (e) {}
+            }
+        };
+        if (isAlcohol && typeof _ageVerifiedDemo !== 'undefined' && !_ageVerifiedDemo && typeof openAgeVerifyModal === 'function') {
+            openAgeVerifyModal(doAdd);
+            return;
+        }
+        doAdd();
+    };
+})();
+
+
+(function ensureHomeReloadScrollsToTop() {
+    if (window.__tavernaHomeScrollTopInstalled) return;
+    window.__tavernaHomeScrollTopInstalled = true;
+
+    const isHomePage = window.location.pathname === '/' || window.location.pathname === '/index.html';
+    if (!isHomePage) return;
+
+    const hasExplicitCartHash = window.location.hash === '#cartOffcanvas' || window.location.hash === '#cartModal';
+    if (!hasExplicitCartHash) {
+        try {
+            if ('scrollRestoration' in window.history) {
+                window.history.scrollRestoration = 'manual';
+            }
+        } catch (e) {}
+        window.scrollTo(0, 0);
+        window.addEventListener('DOMContentLoaded', () => {
+            window.scrollTo(0, 0);
+        });
+        window.addEventListener('load', () => {
+            setTimeout(() => window.scrollTo(0, 0), 0);
+        });
+    }
+})();

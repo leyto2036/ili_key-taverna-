@@ -24,6 +24,22 @@ from extensions import db
 from models import ContentBlock, MenuItem, Order, OrderItem, Reservation, User
 
 BASE_DIR = Path(__file__).resolve().parent
+
+env_file = BASE_DIR / ".env"
+if env_file.exists():
+    try:
+        from dotenv import load_dotenv
+        load_dotenv(env_file, override=False)
+    except ImportError:
+        for _line in env_file.read_text(encoding="utf-8").splitlines():
+            _s = _line.strip()
+            if not _s or _s.startswith("#") or "=" not in _s:
+                continue
+            _k, _v = _s.split("=", 1)
+            _k = _k.strip()
+            _v = _v.strip().strip('"').strip("'")
+            if _k and _k not in os.environ:
+                os.environ[_k] = _v
 app = Flask(__name__)
 app.config.update(
     SECRET_KEY=os.environ.get("SECRET_KEY", "dev-only-change-this-secret-key"),

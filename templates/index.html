@@ -4,8 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{{ t.title }}</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="{{ url_for('static', filename='vendor/bootstrap/bootstrap.min.css') }}" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='vendor/fontawesome/css/all.min.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
     {% if csrf_token is defined %}<meta name="csrf-token" content="{{ csrf_token() }}">{% endif %}
 </head>
@@ -14,8 +14,9 @@
     <div class="container-fluid d-flex flex-column gap-2">
         <!-- Полоса 1: только название заведения на своей отдельной строке -->
         <div class="d-flex align-items-center justify-content-center w-100">
-            <a href="{{ url_for('index') }}" class="navbar-brand fw-bold text-warning m-0 px-3 py-1 rounded-3 border border-warning bg-black bg-opacity-50 d-inline-flex align-items-center justify-content-center shadow-sm" style="font-size: 1.25rem; letter-spacing: 0.4px;">
-                <i class="fas fa-utensils me-2"></i><span>Taverna Yamas</span>
+            <a href="{{ url_for('index') }}" class="navbar-brand fw-bold text-warning m-0 px-3 py-1 rounded-3 border border-warning bg-black bg-opacity-50 d-inline-flex align-items-center justify-content-center gap-2 shadow-sm" style="font-size: clamp(1.45rem, 2.5vw, 1.95rem); letter-spacing: 0.6px; line-height: 1.15;">
+                <img src="{{ url_for('static', filename='images/logo_yamas.png') }}" alt="Taverna Yamas Logo" style="height: 40px; width: 40px; object-fit: cover; border-radius: 8px; border: 1px solid rgba(255,193,7,0.6);">
+                <span>Taverna Yamas</span>
             </a>
         </div>
 
@@ -66,16 +67,20 @@
 <!-- Шапка -->
     <header class="hero" id="heroHeader">
         <div class="hero-controls edit-tool">
-            <button class="hero-btn" title="Изменить режим фона" onclick="toggleHeroFit()">
+            <button class="hero-btn" title="{{ 'Изменить режим фона' if current_lang == 'ru' else ('Toggle background fit' if current_lang == 'en' else 'Hintergrundansicht wechseln') }}" onclick="toggleHeroFit()">
                 <i class="fas fa-expand"></i>
             </button>
-            <label class="hero-btn" title="Сменить заставку">
+            <label class="hero-btn" title="{{ 'Сменить заставку' if current_lang == 'ru' else ('Change hero image' if current_lang == 'en' else 'Titelbild wechseln') }}">
                 <i class="fas fa-pencil-alt"></i>
                 <input type="file" hidden onchange="updateHeroBg(event)">
             </label>
         </div>
         <div class="container">
-<h1 class="display-3 fw-bold mb-2">Taverna Yamas</h1>
+<div class="yinyang-duo mb-2">
+                <h1 class="display-3 fw-bold m-0">Taverna Yamas</h1>
+                <span class="yinyang-symbol" aria-hidden="true" title="Taverna &amp; Bar — Yin &amp; Yang"></span>
+                <a href="#neighborBarSection" class="yinyang-pill-bar text-decoration-none"><i class="fas fa-martini-glass-citrus me-1"></i>Bar</a>
+            </div>
             <p class="lead mb-3 text-light px-2">{{ t.subtitle }}</p>
 
             <div class="mb-4 d-flex align-items-center justify-content-center gap-2">
@@ -122,9 +127,17 @@
                             </div>
                             <p class="text-muted small mb-3">{{ item.desc }}</p>
                         </div>
-                        <button type="button" class="btn btn-success btn-sm fw-bold w-100" onclick="addToCart('{{ item.name|e }}', '{{ item.price|e }}')">
-                            <i class="fas fa-cart-plus me-1"></i>{{ t.to_order }}
-                        </button>
+                        <div>
+                            <div class="dish-qty-slot" onclick="event.stopPropagation();">
+                                <button type="button" class="btn btn-sm btn-outline-secondary py-0 px-2 fw-bold" onclick="changeDishQty('{{ item.name|e }}', '{{ item.price|e }}', -1)" title="-1">−</button>
+                                <span class="dish-qty-big is-empty" data-dish-qty="{{ item.name|e }}">0</span>
+                                <button type="button" class="btn btn-sm btn-outline-success py-0 px-2 fw-bold" onclick="changeDishQty('{{ item.name|e }}', '{{ item.price|e }}', 1)" title="+1">+</button>
+                                <span class="dish-size-tag">1 Port.</span>
+                            </div>
+                            <button type="button" class="btn btn-success btn-sm fw-bold w-100" onclick="addToCart('{{ item.name|e }}', '{{ item.price|e }}')">
+                                <i class="fas fa-cart-plus me-1"></i>{{ t.to_order }}
+                            </button>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -142,48 +155,48 @@
         <div class="card-body p-4 p-md-5">
             <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4">
                 <div>
-                    <span class="badge bg-warning text-dark fw-bold mb-2"><i class="fas fa-martini-glass-citrus me-1"></i>Nachbar-Bar • Единая платформа</span>
-                    <h3 class="fw-bold m-0 text-warning">Соседний бар — Yamas Lounge &amp; Bar</h3>
-                    <p class="text-light opacity-75 small mb-0 mt-1">Рядом с таверной • Коктейли, греческие напитки и барные закуски в той же корзине (самовывоз -10%)</p>
+                    <span class="badge bg-warning text-dark fw-bold mb-2"><i class="fas fa-martini-glass-citrus me-1"></i>{{ 'Nachbar-Bar • Единая платформа' if current_lang == 'ru' else ('Neighbor Bar • Unified Platform' if current_lang == 'en' else 'Nachbar-Bar • Gemeinsame Plattform') }}</span>
+                    <h3 class="fw-bold m-0 text-warning">Nachbarbar — Yamas Lounge &amp; Bar</h3>
+                    <p class="text-light opacity-75 small mb-0 mt-1">{{ 'Рядом с таверной • Коктейли, греческие напитки и барные закуски в той же корзине (самовывоз -10%)' if current_lang == 'ru' else ('Next to the taverna • Cocktails, Greek drinks & bar meze in the same cart (pickup -10%)' if current_lang == 'en' else 'Direkt neben der Taverna • Cocktails, griechische Drinks & Bar-Meze im selben Warenkorb (Abholung -10%)') }}</p>
                 </div>
                 <div class="d-flex flex-wrap gap-2 align-items-center">
                     <span id="ageStatusBadge" class="badge bg-secondary text-light px-3 py-2">
-                        <i class="fas fa-id-card me-1"></i>18+ не подтверждён (Demo)
+                        <i class="fas fa-id-card me-1"></i>18+ nicht bestätigt (Demo)
                     </span>
                     <button type="button" class="btn btn-outline-info btn-sm fw-bold" onclick="openAgeVerifyModal(null)">
-                        <i class="fas fa-user-check me-1"></i>Проверка 18+ / Документ
+                        <i class="fas fa-user-check me-1"></i>{{ 'Проверка 18+ / Документ' if current_lang == 'ru' else ('18+ Check / ID' if current_lang == 'en' else '18+ Prüfung / Ausweis') }}
                     </button>
                     <button type="button" class="btn btn-outline-warning btn-sm fw-bold" onclick="switchPlatformZone('taverna')">
-                        <i class="fas fa-utensils me-1"></i>Зал Таверны
+                        <i class="fas fa-utensils me-1"></i>{{ 'Зал Таверны' if current_lang == 'ru' else ('Taverna Hall' if current_lang == 'en' else 'Taverna-Bereich') }}
                     </button>
                     <button type="button" class="btn btn-success btn-sm fw-bold" data-bs-toggle="modal" data-bs-target="#callVenueModal">
-                        <i class="fas fa-phone-volume me-1"></i>Звонок в заведение
+                        <i class="fas fa-phone-volume me-1"></i>Lokal anrufen
                     </button>
                 </div>
             </div>
 
             <div class="d-flex flex-wrap gap-2 mb-4" id="barFilterButtons">
-                <button type="button" class="btn btn-sm btn-warning fw-bold text-dark active" onclick="filterBarItems('all', this)">Все позиции</button>
-                <button type="button" class="btn btn-sm btn-outline-warning fw-bold" onclick="filterBarItems('cocktails', this)">Коктейли &amp; Спиртное (18+)</button>
-                <button type="button" class="btn btn-sm btn-outline-warning fw-bold" onclick="filterBarItems('beer_wine', this)">Пиво &amp; Вино (18+)</button>
-                <button type="button" class="btn btn-sm btn-outline-warning fw-bold" onclick="filterBarItems('meze_na', this)">Барное мезе &amp; Б/А</button>
+                <button type="button" class="btn btn-sm btn-warning fw-bold text-dark active" onclick="filterBarItems('all', this)">{{ 'Все позиции' if current_lang == 'ru' else ('All items' if current_lang == 'en' else 'Alle') }}</button>
+                <button type="button" class="btn btn-sm btn-outline-warning fw-bold" onclick="filterBarItems('cocktails', this)">{{ 'Коктейли &amp; Спиртное (18+)' if current_lang == 'ru' else ('Cocktails &amp; Spirits (18+)' if current_lang == 'en' else 'Cocktails &amp; Spirituosen (18+)') }}</button>
+                <button type="button" class="btn btn-sm btn-outline-warning fw-bold" onclick="filterBarItems('beer_wine', this)">{{ 'Пиво &amp; Вино (18+)' if current_lang == 'ru' else ('Beer &amp; Wine (18+)' if current_lang == 'en' else 'Bier &amp; Wein (18+)') }}</button>
+                <button type="button" class="btn btn-sm btn-outline-warning fw-bold" onclick="filterBarItems('meze_na', this)">{{ 'Барное мезе &amp; Б/А' if current_lang == 'ru' else ('Bar Meze &amp; Non-Alc' if current_lang == 'en' else 'Bar-Meze &amp; Alkoholfrei') }}</button>
             </div>
 
             <div class="row g-3" id="neighborBarCards">
                 <div class="col-12 col-sm-6 col-lg-3 bar-item-card" data-bar-cat="cocktails">
                     <div class="card h-100 bg-secondary bg-opacity-25 text-white border border-warning border-opacity-25 rounded-3">
                         <div class="card-body d-flex flex-column justify-content-between">
-<div class="d-flex align-items-center gap-2 mb-2"><img src="https://encrypted-tbn0.gstatic.com/licensed-image?q=tbn:ANd9GcTEA47uEwaiJpi_tW3XJDC5_Q7OQKGDGZM0mwoSFlIaRDCn-4UycfO7zOq_2q032LINjkqpyx9a5SOjUPE" alt="Ouzo" class="bar-thumb-preview rounded-3 border" style="width:56px;height:56px;object-fit:cover;cursor:pointer;" onclick="openDrinkPhotoPreview(this.src, 'Ouzo')" title="Нажмите, чтобы увеличить"><span class="small text-muted">Фото напитка (нажмите для увеличения)</span></div>
+<div class="d-flex align-items-center gap-2 mb-2"><img src="/static/images/logo_yamas.png" alt="Ouzo" class="bar-thumb-preview rounded-3 border" style="width:56px;height:56px;object-fit:cover;cursor:pointer;" onclick="openDrinkPhotoPreview(this.src, 'Ouzo')" title="{{ 'Нажмите, чтобы увеличить' if current_lang == 'ru' else ('Click to enlarge' if current_lang == 'en' else 'Zum Vergrößern anklicken') }}"><span class="small text-muted">Drink-Foto (zum Vergrößern anklicken)</span></div>
                             <div>
                                 <div class="d-flex justify-content-between align-items-start gap-2 mb-1">
                                     <h6 class="fw-bold text-warning mb-0">Ouzo Spritz &amp; Citrus</h6>
                                     <span class="badge bg-danger">18+</span>
                                     <span class="badge bg-warning text-dark">8.50 €</span>
                                 </div>
-                                <p class="small text-light opacity-75 mb-2">Анисовый аперитив, свежий лимон, мята и лёд • ~8 мин</p>
+                                <p class="small text-light opacity-75 mb-2">{{ 'Анисовый аперитив, свежий лимон, мята и лёд • ~8 мин' if current_lang == 'ru' else ('Anise aperitif, fresh lemon, mint &amp; ice • ~8 min' if current_lang == 'en' else 'Anis-Aperitif, frische Zitrone, Minze &amp; Eis • ~8 Min.') }}</p>
                             </div>
                             <button type="button" class="btn btn-warning btn-sm fw-bold text-dark w-100" onclick="addBarItemToCart('Bar: Ouzo Spritz & Citrus', 8.50, 8, true)">
-                                <i class="fas fa-plus me-1"></i>В заказ
+                                <i class="fas fa-plus me-1"></i>{{ 'В заказ' if current_lang == 'ru' else ('Add to order' if current_lang == 'en' else 'In den Warenkorb') }}
                             </button>
                         </div>
                     </div>
@@ -197,10 +210,10 @@
                                     <span class="badge bg-danger">18+</span>
                                     <span class="badge bg-warning text-dark">10.50 €</span>
                                 </div>
-                                <p class="small text-light opacity-75 mb-2">Средиземноморский джин, красный вермут, апельсиновая цедра • ~8 мин</p>
+                                <p class="small text-light opacity-75 mb-2">{{ 'Средиземноморский джин, красный вермут, апельсиновая цедра • ~8 мин' if current_lang == 'ru' else ('Mediterranean gin, sweet vermouth, orange peel • ~8 min' if current_lang == 'en' else 'Mediterraner Gin, roter Wermut, Orangenzeste • ~8 Min.') }}</p>
                             </div>
                             <button type="button" class="btn btn-warning btn-sm fw-bold text-dark w-100" onclick="addBarItemToCart('Bar: Aegean Negroni', 10.50, 8, true)">
-                                <i class="fas fa-plus me-1"></i>В заказ
+                                <i class="fas fa-plus me-1"></i>{{ 'В заказ' if current_lang == 'ru' else ('Add to order' if current_lang == 'en' else 'In den Warenkorb') }}
                             </button>
                         </div>
                     </div>
@@ -214,10 +227,10 @@
                                     <span class="badge bg-danger">18+</span>
                                     <span class="badge bg-warning text-dark">11.00 €</span>
                                 </div>
-                                <p class="small text-light opacity-75 mb-2">Греческий бренди Metaxa 12*, лимонный фреш, биттер • ~7 мин</p>
+                                <p class="small text-light opacity-75 mb-2">{{ 'Греческий бренди Metaxa 12*, лимонный фреш, биттер • ~7 мин' if current_lang == 'ru' else ('Greek brandy Metaxa 12*, fresh lemon, bitters • ~7 min' if current_lang == 'en' else 'Griechischer Brandy Metaxa 12*, Zitronensaft, Bitters • ~7 Min.') }}</p>
                             </div>
                             <button type="button" class="btn btn-warning btn-sm fw-bold text-dark w-100" onclick="addBarItemToCart('Bar: Metaxa 12* Sour', 11.00, 7, true)">
-                                <i class="fas fa-plus me-1"></i>В заказ
+                                <i class="fas fa-plus me-1"></i>{{ 'В заказ' if current_lang == 'ru' else ('Add to order' if current_lang == 'en' else 'In den Warenkorb') }}
                             </button>
                         </div>
                     </div>
@@ -231,10 +244,10 @@
                                     <span class="badge bg-danger">18+</span>
                                     <span class="badge bg-warning text-dark">9.50 €</span>
                                 </div>
-                                <p class="small text-light opacity-75 mb-2">Игристое, персик, апельсин и базилик • ~7 мин</p>
+                                <p class="small text-light opacity-75 mb-2">{{ 'Игристое, персик, апельсин и базилик • ~7 мин' if current_lang == 'ru' else ('Sparkling wine, peach, orange &amp; basil • ~7 min' if current_lang == 'en' else 'Schaumwein, Pfirsich, Orange &amp; Basilikum • ~7 Min.') }}</p>
                             </div>
                             <button type="button" class="btn btn-warning btn-sm fw-bold text-dark w-100" onclick="addBarItemToCart('Bar: Santorini Sunset Spritz', 9.50, 7, true)">
-                                <i class="fas fa-plus me-1"></i>В заказ
+                                <i class="fas fa-plus me-1"></i>{{ 'В заказ' if current_lang == 'ru' else ('Add to order' if current_lang == 'en' else 'In den Warenkorb') }}
                             </button>
                         </div>
                     </div>
@@ -248,10 +261,10 @@
                                     <span class="badge bg-danger">18+</span>
                                     <span class="badge bg-warning text-dark">5.20 €</span>
                                 </div>
-                                <p class="small text-light opacity-75 mb-2">Охлаждённое разливное / греческое пиво из соседнего бара • ~5 мин</p>
+                                <p class="small text-light opacity-75 mb-2">{{ 'Охлаждённое разливное / греческое пиво из соседнего бара • ~5 мин' if current_lang == 'ru' else ('Chilled draft / Greek beer from the neighbor bar • ~5 min' if current_lang == 'en' else 'Gekühltes Fass- / griechisches Bier aus der Nachbarbar • ~5 Min.') }}</p>
                             </div>
                             <button type="button" class="btn btn-warning btn-sm fw-bold text-dark w-100" onclick="addBarItemToCart('Bar: Mythos & Draft Beer', 5.20, 5, true)">
-                                <i class="fas fa-plus me-1"></i>В заказ
+                                <i class="fas fa-plus me-1"></i>{{ 'В заказ' if current_lang == 'ru' else ('Add to order' if current_lang == 'en' else 'In den Warenkorb') }}
                             </button>
                         </div>
                     </div>
@@ -265,10 +278,10 @@
                                     <span class="badge bg-danger">18+</span>
                                     <span class="badge bg-warning text-dark">7.90 €</span>
                                 </div>
-                                <p class="small text-light opacity-75 mb-2">Сухое белое греческое вино с минеральным послевкусием • ~5 мин</p>
+                                <p class="small text-light opacity-75 mb-2">{{ 'Сухое белое греческое вино с минеральным послевкусием • ~5 мин' if current_lang == 'ru' else ('Dry Greek white wine with mineral finish • ~5 min' if current_lang == 'en' else 'Trockener griechischer Weißwein mit mineralischem Abgang • ~5 Min.') }}</p>
                             </div>
                             <button type="button" class="btn btn-warning btn-sm fw-bold text-dark w-100" onclick="addBarItemToCart('Bar: Assyrtiko Santorini (Glass)', 7.90, 5, true)">
-                                <i class="fas fa-plus me-1"></i>В заказ
+                                <i class="fas fa-plus me-1"></i>{{ 'В заказ' if current_lang == 'ru' else ('Add to order' if current_lang == 'en' else 'In den Warenkorb') }}
                             </button>
                         </div>
                     </div>
@@ -282,10 +295,10 @@
                                     <span class="badge bg-success">0%</span>
                                     <span class="badge bg-warning text-dark">12.00 €</span>
                                 </div>
-                                <p class="small text-light opacity-75 mb-2">Оливки Каламата, фета с орегано, пита и тцадзики к бару • ~12 мин</p>
+                                <p class="small text-light opacity-75 mb-2">{{ 'Оливки Каламата, фета с орегано, пита и тцадзики к бару • ~12 мин' if current_lang == 'ru' else ('Kalamata olives, oregano feta, pita &amp; tzatziki for the bar • ~12 min' if current_lang == 'en' else 'Kalamata-Oliven, Feta mit Oregano, Pita &amp; Tzatziki zur Bar • ~12 Min.') }}</p>
                             </div>
                             <button type="button" class="btn btn-warning btn-sm fw-bold text-dark w-100" onclick="addBarItemToCart('Bar: Bar Meze Platter', 12.00, 12, false)">
-                                <i class="fas fa-plus me-1"></i>В заказ
+                                <i class="fas fa-plus me-1"></i>{{ 'В заказ' if current_lang == 'ru' else ('Add to order' if current_lang == 'en' else 'In den Warenkorb') }}
                             </button>
                         </div>
                     </div>
@@ -299,10 +312,10 @@
                                     <span class="badge bg-success">0%</span>
                                     <span class="badge bg-warning text-dark">6.40 €</span>
                                 </div>
-                                <p class="small text-light opacity-75 mb-2">Освежающий безалкогольный микс с огурцом, лаймом и розмарином • ~6 мин</p>
+                                <p class="small text-light opacity-75 mb-2">{{ 'Освежающий безалкогольный микс с огурцом, лаймом и розмарином • ~6 мин' if current_lang == 'ru' else ('Refreshing non-alcoholic mix with cucumber, lime &amp; rosemary • ~6 min' if current_lang == 'en' else 'Erfrischender alkoholfreier Mix mit Gurke, Limette &amp; Rosmarin • ~6 Min.') }}</p>
                             </div>
                             <button type="button" class="btn btn-warning btn-sm fw-bold text-dark w-100" onclick="addBarItemToCart('Bar: Virgin Aegean Tonic', 6.40, 6, false)">
-                                <i class="fas fa-plus me-1"></i>В заказ
+                                <i class="fas fa-plus me-1"></i>{{ 'В заказ' if current_lang == 'ru' else ('Add to order' if current_lang == 'en' else 'In den Warenkorb') }}
                             </button>
                         </div>
                     </div>
@@ -348,19 +361,19 @@
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content rounded-4 border-0 p-4">
                 <div class="modal-header border-0 pb-0">
-                    <h5 class="modal-title fw-bold text-dark"><i class="fas fa-chair text-warning me-2"></i>Изменить количество мест</h5>
+                    <h5 class="modal-title fw-bold text-dark"><i class="fas fa-chair text-warning me-2"></i>{{ 'Изменить количество мест' if current_lang == 'ru' else ('Edit available seats' if current_lang == 'en' else 'Freie Plätze ändern') }}</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body">
                     <div class="mb-3">
-                        <label class="form-label small fw-bold">Свободных мест в зале (из 10)</label>
+                        <label class="form-label small fw-bold">{{ 'Свободных мест в зале (из 10)' if current_lang == 'ru' else ('Free seats in hall (of 10)' if current_lang == 'en' else 'Freie Plätze im Gastraum (von 10)') }}</label>
                         <input type="number" class="form-control" id="inputIndoorFree" min="0" max="10" value="5">
                     </div>
                     <div class="mb-3">
-                        <label class="form-label small fw-bold">Свободных мест на террасе (из 10)</label>
+                        <label class="form-label small fw-bold">{{ 'Свободных мест на террасе (из 10)' if current_lang == 'ru' else ('Free seats on terrace (of 10)' if current_lang == 'en' else 'Freie Plätze auf der Terrasse (von 10)') }}</label>
                         <input type="number" class="form-control" id="inputTerraceFree" min="0" max="10" value="5">
                     </div>
-                    <button class="btn btn-warning w-100 fw-bold text-dark" onclick="saveTableSeats()">Сохранить места</button>
+                    <button class="btn btn-warning w-100 fw-bold text-dark" onclick="saveTableSeats()">{{ 'Сохранить места' if current_lang == 'ru' else ('Save seats' if current_lang == 'en' else 'Plätze speichern') }}</button>
                 </div>
             </div>
         </div>
@@ -368,7 +381,7 @@
 
     <!-- Плавающая корзина -->
     <div class="floating-container">
-        <a href="{{ links.phone }}" class="floating-phone-btn" title="Связаться">
+        <a href="{{ links.phone }}" class="floating-phone-btn" title="{{ 'Связаться' if current_lang == 'ru' else ('Contact' if current_lang == 'en' else 'Kontakt') }}">
             <i class="fas fa-phone-alt"></i>
         </a>
         <a href="#" class="floating-cart-btn" data-bs-toggle="modal" data-bs-target="#cartModal">
@@ -408,7 +421,7 @@
                         </button>
                     
 <div class="mb-3">
-    <label class="form-label small fw-bold text-dark d-block">Способ получения / Bestellart</label>
+    <label class="form-label small fw-bold text-dark d-block">{{ 'Способ получения / Bestellart' if current_lang == 'ru' else ('Order type / Bestellart' if current_lang == 'en' else 'Bestellart') }}</label>
     <div class="btn-group w-100" role="group">
         <input type="radio" class="btn-check" name="fulfillmentMode" id="modeDelivery" value="delivery" checked onchange="updateCartUI()">
         <label class="btn btn-outline-primary btn-sm fw-bold" for="modeDelivery">🚚 {{ t.delivery_info }}</label>
@@ -422,15 +435,15 @@
     <span id="cartDiscountAmount">-0.00 €</span>
 </div>
 <div class="d-flex justify-content-between align-items-center small bg-light border rounded-3 px-2 py-2 mb-3">
-    <span class="fw-bold text-dark"><i class="fas fa-clock text-primary me-1"></i>Примерное время ожидания:</span>
+    <span class="fw-bold text-dark"><i class="fas fa-clock text-primary me-1"></i>{{ 'Примерное время ожидания:' if current_lang == 'ru' else ('Estimated wait time:' if current_lang == 'en' else 'Voraussichtliche Wartezeit:') }}</span>
     <span id="cartWaitTimeBadge" class="badge bg-primary text-white">—</span>
 </div>
 <div class="mb-3">
-    <label class="form-label small fw-bold text-dark">Онлайн-оплата / Zahlung</label>
+    <label class="form-label small fw-bold text-dark">{{ 'Онлайн-оплата / Zahlung' if current_lang == 'ru' else ('Payment / Zahlung' if current_lang == 'en' else 'Zahlung') }}</label>
     <select id="paymentMethodSelect" class="form-select form-select-sm">
-        <option value="Online (Karte / Apple Pay / Google Pay)">Онлайн-оплата (Karte / Apple Pay / Google Pay)</option>
+        <option value="Online (Karte / Apple Pay / Google Pay)">{{ 'Онлайн-оплата (Karte / Apple Pay / Google Pay)' if current_lang == 'ru' else ('Online payment (Card / Apple Pay / Google Pay)' if current_lang == 'en' else 'Online-Zahlung (Karte / Apple Pay / Google Pay)') }}</option>
         <option value="PayPal">PayPal</option>
-        <option value="Bar bei Abholung / Lieferung">Оплата при получении (Bar / EC)</option>
+        <option value="Bar bei Abholung / Lieferung">{{ 'Оплата при получении (Bar / EC)' if current_lang == 'ru' else ('Pay on pickup / delivery (Cash / EC)' if current_lang == 'en' else 'Zahlung bei Abholung / Lieferung (Bar / EC)') }}</option>
     </select>
 </div>
 <button type="button" class="btn btn-success btn-lg w-100 fw-bold text-white mb-2" onclick="openMockPaymentModal()">
@@ -560,7 +573,7 @@
 
 </footer>
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="{{ url_for('static', filename='vendor/bootstrap/bootstrap.bundle.min.js') }}"></script>
     <script src="{{ url_for('static', filename='js/main.js') }}"></script>
 
 <!-- Модальное окно автоматической квитанции (Bestellbeleg / Quittung) -->
@@ -610,14 +623,14 @@
                         title="Taverna Yamas Map">
                     </iframe>
                 </div>
-                <h6 class="fw-bold mb-2"><i class="fas fa-video text-warning me-2"></i>Как добраться / Anfahrt</h6>
+                <h6 class="fw-bold mb-2"><i class="fas fa-video text-warning me-2"></i>{{ 'Как добраться / Anfahrt' if current_lang == 'ru' else ('Directions / Anfahrt' if current_lang == 'en' else 'Anfahrt') }}</h6>
                 <div class="ratio ratio-16x9 rounded-4 overflow-hidden bg-dark border position-relative">
                     <video id="anfahrtVideo" class="w-100 h-100" style="object-fit: cover;" muted autoplay loop playsinline controls preload="metadata"
                            onerror="this.classList.add('d-none'); document.getElementById('anfahrtVideoFallback')?.classList.remove('d-none');">
                         <source src="{{ url_for('static', filename='videos/anfahrt.mp4') }}" type="video/mp4">
                     </video>
                     <div id="anfahrtVideoFallback" class="d-none d-flex align-items-center justify-content-center h-100 text-light p-3 text-center small">
-                        Видео-маршрут будет показан автоматически после добавления файла <code>static/videos/anfahrt.mp4</code>.
+                        {{ 'Видео-маршрут будет показан автоматически после добавления файла' if current_lang == 'ru' else ('Route video will appear automatically after adding' if current_lang == 'en' else 'Das Routenvideo erscheint automatisch, sobald die Datei') }} <code>static/videos/anfahrt.mp4</code>.
                     </div>
                 </div>
             </div>
@@ -699,7 +712,7 @@
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content rounded-4 border-0 p-4">
             <div class="modal-header border-0 pb-1">
-                <h5 class="modal-title fw-bold text-dark"><i class="fas fa-phone-volume text-success me-2"></i>Звонок в Taverna Yamas &amp; Bar</h5>
+                <h5 class="modal-title fw-bold text-dark"><i class="fas fa-phone-volume text-success me-2"></i>Anruf bei Taverna Yamas &amp; Bar</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
             <div class="modal-body">
@@ -758,7 +771,7 @@
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content rounded-4 border-0 p-4">
             <div class="modal-header border-0 pb-1">
-                <h5 class="modal-title fw-bold text-dark"><i class="fas fa-phone-volume text-success me-2"></i>Звонок в Taverna Yamas &amp; Bar</h5>
+                <h5 class="modal-title fw-bold text-dark"><i class="fas fa-phone-volume text-success me-2"></i>Anruf bei Taverna Yamas &amp; Bar</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
             <div class="modal-body">
@@ -880,6 +893,131 @@
     </div>
   </div>
 </div>
+
+
+<script>
+(function() {
+  const lang = "{{ current_lang or 'de' }}";
+  const dict = {
+    de: {
+      barBadge: "Nachbar-Bar • Gemeinsame Plattform",
+      barTitle: "Nachbarbar — Yamas Lounge &amp; Bar",
+      barSub: "Direkt neben der Taverna • Cocktails, griechische Drinks &amp; Bar-Meze im selben Warenkorb (Abholung -10%)",
+      ageUnverified: "18+ nicht bestätigt (Demo)",
+      ageVerified: "18+ bestätigt (ohne Datenspeicherung)",
+      btnAge: "18+ Prüfung / Ausweis",
+      btnTaverna: "Taverna-Bereich",
+      btnCall: "Lokal anrufen",
+      callModalTitle: "Anruf bei Taverna Yamas &amp; Bar",
+      fAll: "Alle Positionen",
+      fCocktails: "Cocktails &amp; Spirituosen (18+)",
+      fBeerWine: "Bier &amp; Wein (18+)",
+      fMezeNa: "Bar-Meze &amp; Alkoholfrei",
+      photoHint: "Drink-Foto (zum Vergrößern klicken)",
+      addBtn: "In den Warenkorb",
+      desc: {
+        "Ouzo Spritz & Citrus": "Anis-Aperitif, frische Zitrone, Minze &amp; Eis • ~8 Min.",
+        "Aegean Negroni": "Mediterraner Gin, roter Wermut, Orangenzeste • ~8 Min.",
+        "Metaxa 12* Sour": "Griechischer Weinbrand Metaxa 12*, Zitronensaft, Bitter • ~7 Min.",
+        "Santorini Sunset Spritz": "Prickelnd, Pfirsich, Orange &amp; Basilikum • ~7 Min.",
+        "Mythos & Draft Beer": "Gekühltes Fass- / griechisches Bier aus der Nachbarbar • ~5 Min.",
+        "Assyrtiko Santorini (Glass)": "Trockener griechischer Weißwein mit mineralischer Note • ~5 Min.",
+        "Bar Meze Platter": "Kalamata-Oliven, Feta mit Oregano, Pita &amp; Tzatziki zur Bar • ~12 Min.",
+        "Virgin Aegean Tonic": "Erfrischender alkoholfreier Mix mit Gurke, Limette &amp; Rosmarin • ~6 Min."
+      }
+    },
+    ru: {
+      barBadge: "{{ 'Nachbar-Bar • Единая платформа' if current_lang == 'ru' else ('Neighbor Bar • Unified Platform' if current_lang == 'en' else 'Nachbar-Bar • Gemeinsame Plattform') }}",
+      barTitle: "Nachbarbar — Yamas Lounge &amp; Bar",
+      barSub: "{{ 'Рядом с таверной • Коктейли, греческие напитки и барные закуски в той же корзине (самовывоз -10%)' if current_lang == 'ru' else ('Next to the taverna • Cocktails, Greek drinks & bar meze in the same cart (pickup -10%)' if current_lang == 'en' else 'Direkt neben der Taverna • Cocktails, griechische Drinks & Bar-Meze im selben Warenkorb (Abholung -10%)') }}",
+      ageUnverified: "18+ nicht bestätigt (Demo)",
+      ageVerified: "18+ отмечено (без хранения данных)",
+      btnAge: "{{ 'Проверка 18+ / Документ' if current_lang == 'ru' else ('18+ Check / ID' if current_lang == 'en' else '18+ Prüfung / Ausweis') }}",
+      btnTaverna: "{{ 'Зал Таверны' if current_lang == 'ru' else ('Taverna Hall' if current_lang == 'en' else 'Taverna-Bereich') }}",
+      btnCall: "Lokal anrufen",
+      callModalTitle: "Anruf bei Taverna Yamas &amp; Bar",
+      fAll: "{{ 'Все позиции' if current_lang == 'ru' else ('All items' if current_lang == 'en' else 'Alle') }}",
+      fCocktails: "{{ 'Коктейли &amp; Спиртное (18+)' if current_lang == 'ru' else ('Cocktails &amp; Spirits (18+)' if current_lang == 'en' else 'Cocktails &amp; Spirituosen (18+)') }}",
+      fBeerWine: "{{ 'Пиво &amp; Вино (18+)' if current_lang == 'ru' else ('Beer &amp; Wine (18+)' if current_lang == 'en' else 'Bier &amp; Wein (18+)') }}",
+      fMezeNa: "{{ 'Барное мезе &amp; Б/А' if current_lang == 'ru' else ('Bar Meze &amp; Non-Alc' if current_lang == 'en' else 'Bar-Meze &amp; Alkoholfrei') }}",
+      photoHint: "Drink-Foto (zum Vergrößern anklicken)",
+      addBtn: "{{ 'В заказ' if current_lang == 'ru' else ('Add to order' if current_lang == 'en' else 'In den Warenkorb') }}",
+      desc: {
+        "Ouzo Spritz & Citrus": "{{ 'Анисовый аперитив, свежий лимон, мята и лёд • ~8 мин' if current_lang == 'ru' else ('Anise aperitif, fresh lemon, mint &amp; ice • ~8 min' if current_lang == 'en' else 'Anis-Aperitif, frische Zitrone, Minze &amp; Eis • ~8 Min.') }}",
+        "Aegean Negroni": "{{ 'Средиземноморский джин, красный вермут, апельсиновая цедра • ~8 мин' if current_lang == 'ru' else ('Mediterranean gin, sweet vermouth, orange peel • ~8 min' if current_lang == 'en' else 'Mediterraner Gin, roter Wermut, Orangenzeste • ~8 Min.') }}",
+        "Metaxa 12* Sour": "{{ 'Греческий бренди Metaxa 12*, лимонный фреш, биттер • ~7 мин' if current_lang == 'ru' else ('Greek brandy Metaxa 12*, fresh lemon, bitters • ~7 min' if current_lang == 'en' else 'Griechischer Brandy Metaxa 12*, Zitronensaft, Bitters • ~7 Min.') }}",
+        "Santorini Sunset Spritz": "{{ 'Игристое, персик, апельсин и базилик • ~7 мин' if current_lang == 'ru' else ('Sparkling wine, peach, orange &amp; basil • ~7 min' if current_lang == 'en' else 'Schaumwein, Pfirsich, Orange &amp; Basilikum • ~7 Min.') }}",
+        "Mythos & Draft Beer": "{{ 'Охлаждённое разливное / греческое пиво из соседнего бара • ~5 мин' if current_lang == 'ru' else ('Chilled draft / Greek beer from the neighbor bar • ~5 min' if current_lang == 'en' else 'Gekühltes Fass- / griechisches Bier aus der Nachbarbar • ~5 Min.') }}",
+        "Assyrtiko Santorini (Glass)": "{{ 'Сухое белое греческое вино с минеральным послевкусием • ~5 мин' if current_lang == 'ru' else ('Dry Greek white wine with mineral finish • ~5 min' if current_lang == 'en' else 'Trockener griechischer Weißwein mit mineralischem Abgang • ~5 Min.') }}",
+        "Bar Meze Platter": "{{ 'Оливки Каламата, фета с орегано, пита и тцадзики к бару • ~12 мин' if current_lang == 'ru' else ('Kalamata olives, oregano feta, pita &amp; tzatziki for the bar • ~12 min' if current_lang == 'en' else 'Kalamata-Oliven, Feta mit Oregano, Pita &amp; Tzatziki zur Bar • ~12 Min.') }}",
+        "Virgin Aegean Tonic": "{{ 'Освежающий безалкогольный микс с огурцом, лаймом и розмарином • ~6 мин' if current_lang == 'ru' else ('Refreshing non-alcoholic mix with cucumber, lime &amp; rosemary • ~6 min' if current_lang == 'en' else 'Erfrischender alkoholfreier Mix mit Gurke, Limette &amp; Rosmarin • ~6 Min.') }}"
+      }
+    },
+    en: {
+      barBadge: "Neighbor Bar • Unified Platform",
+      barTitle: "Neighbor Bar — Yamas Lounge &amp; Bar",
+      barSub: "Right next to the taverna • Cocktails, Greek drinks &amp; bar meze in the same cart (pickup -10%)",
+      ageUnverified: "18+ not verified (Demo)",
+      ageVerified: "18+ verified (no personal data stored)",
+      btnAge: "18+ Check / ID",
+      btnTaverna: "Taverna Hall",
+      btnCall: "Call Venue",
+      callModalTitle: "Call Taverna Yamas &amp; Bar",
+      fAll: "All Items",
+      fCocktails: "Cocktails &amp; Spirits (18+)",
+      fBeerWine: "Beer &amp; Wine (18+)",
+      fMezeNa: "Bar Meze &amp; Non-Alcoholic",
+      photoHint: "Drink photo (click to enlarge)",
+      addBtn: "Add to Order",
+      desc: {
+        "Ouzo Spritz & Citrus": "Anise aperitif, fresh lemon, mint &amp; ice • ~8 min",
+        "Aegean Negroni": "Mediterranean gin, sweet vermouth, orange peel • ~8 min",
+        "Metaxa 12* Sour": "Greek brandy Metaxa 12*, fresh lemon, bitters • ~7 min",
+        "Santorini Sunset Spritz": "Sparkling, peach, orange &amp; basil • ~7 min",
+        "Mythos & Draft Beer": "Chilled draft / Greek beer from the neighbor bar • ~5 min",
+        "Assyrtiko Santorini (Glass)": "Dry Greek white wine with mineral finish • ~5 min",
+        "Bar Meze Platter": "Kalamata olives, oregano feta, pita &amp; tzatziki for the bar • ~12 min",
+        "Virgin Aegean Tonic": "Refreshing non-alcoholic mix with cucumber, lime &amp; rosemary • ~6 min"
+      }
+    }
+  };
+  const cfg = dict[lang] || dict.de;
+  document.addEventListener("DOMContentLoaded", function() {
+    const sec = document.getElementById("neighborBarSection");
+    if (!sec) return;
+    const badge = sec.querySelector(".badge.bg-warning");
+    if (badge) badge.innerHTML = `<i class="fas fa-martini-glass-citrus me-1"></i>${cfg.barBadge}`;
+    const h3 = sec.querySelector("h3");
+    if (h3) h3.innerHTML = cfg.barTitle;
+    const sub = sec.querySelector("h3 + p");
+    if (sub) sub.innerHTML = cfg.barSub;
+    const ageB = document.getElementById("ageStatusBadge");
+    if (ageB) ageB.innerHTML = `<i class="fas fa-id-card me-1"></i>${cfg.ageUnverified}`;
+    const ageBtn = sec.querySelector('button[onclick*="openAgeVerifyModal"]');
+    if (ageBtn) ageBtn.innerHTML = `<i class="fas fa-user-check me-1"></i>${cfg.btnAge}`;
+    const tavBtn = sec.querySelector('button[onclick*="switchPlatformZone(\'taverna\')"]');
+    if (tavBtn) tavBtn.innerHTML = `<i class="fas fa-utensils me-1"></i>${cfg.btnTaverna}`;
+    const callBtn = sec.querySelector('button[data-bs-target="#callVenueModal"]');
+    if (callBtn) callBtn.innerHTML = `<i class="fas fa-phone-volume me-1"></i>${cfg.btnCall}`;
+    document.querySelectorAll("#callVenueModal .modal-title").forEach(el => { if (cfg.callModalTitle) el.innerHTML = `<i class="fas fa-phone-volume text-success me-2"></i>${cfg.callModalTitle}`; });
+    const filterBtns = sec.querySelectorAll("#barFilterButtons button");
+    if (filterBtns[0]) filterBtns[0].innerHTML = cfg.fAll;
+    if (filterBtns[1]) filterBtns[1].innerHTML = cfg.fCocktails;
+    if (filterBtns[2]) filterBtns[2].innerHTML = cfg.fBeerWine;
+    if (filterBtns[3]) filterBtns[3].innerHTML = cfg.fMezeNa;
+    sec.querySelectorAll(".bar-item-card").forEach(card => {
+      const titleEl = card.querySelector("h6");
+      const name = titleEl ? titleEl.textContent.trim() : "";
+      const pEl = card.querySelector("p.small");
+      if (pEl && cfg.desc[name]) pEl.innerHTML = cfg.desc[name];
+      const hintEl = card.querySelector("span.small.text-muted");
+      if (hintEl) hintEl.innerHTML = cfg.photoHint;
+      const addBtn = card.querySelector('button[onclick*="addBarItemToCart"]');
+      if (addBtn) addBtn.innerHTML = `<i class="fas fa-plus me-1"></i>${cfg.addBtn}`;
+    });
+  });
+})();
+</script>
 
 </body>
 </html>

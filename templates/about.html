@@ -4,8 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{{ t.about_title }} — {{ t.title }}</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="{{ url_for('static', filename='vendor/bootstrap/bootstrap.min.css') }}" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='vendor/fontawesome/css/all.min.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
 </head>
 <body data-theme="light">
@@ -91,7 +91,7 @@
             <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-3">
                 <div>
                     <h3 class="fw-bold m-0">Foto & Beschreibung (Lieferando / Spezialitäten)</h3>
-                    <small class="text-muted">Слоты под фото и описание — можно менять фото и текст прямо на странице или добавить свой блок</small>
+                    <small class="text-muted">{{ t.about_slots_hint or ('Слоты под фото и описание — можно менять фото и текст прямо на странице или добавить свой блок' if current_lang == 'ru' else ('Photo & description slots — edit directly on the page or add a custom block' if current_lang == 'en' else 'Slots für Foto & Beschreibung — direkt auf der Seite bearbeiten oder eigenen Block hinzufügen')) }}</small>
                 </div>
                 <button class="btn btn-outline-primary btn-sm fw-bold" onclick="addMovableBlock()">
                     <i class="fas fa-plus me-1"></i> {{ t.block_btn }}
@@ -144,7 +144,7 @@
         </section>
     </main>
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="{{ url_for('static', filename='vendor/bootstrap/bootstrap.bundle.min.js') }}"></script>
     <script src="{{ url_for('static', filename='js/main.js') }}"></script>
 
 <div class="modal fade" id="mapModal" tabindex="-1">
@@ -165,11 +165,11 @@
                         title="Taverna Yamas Map">
                     </iframe>
                 </div>
-                <h6 class="fw-bold mb-2"><i class="fas fa-video text-warning me-2"></i>Как добраться / Anfahrt</h6>
+                <h6 class="fw-bold mb-2"><i class="fas fa-video text-warning me-2"></i>{{ 'Как добраться / Anfahrt' if current_lang == 'ru' else ('Directions / Anfahrt' if current_lang == 'en' else 'Anfahrt') }}</h6>
                 <div class="ratio ratio-16x9 rounded-4 overflow-hidden bg-dark border">
                     <video controls preload="metadata" class="w-100 h-100">
                         <source src="{{ url_for('static', filename='videos/anfahrt.mp4') }}" type="video/mp4">
-                        Видео-маршрут: положите файл в 
+                        {{ 'Видео-маршрут: положите файл в' if current_lang == 'ru' else ('Route video: place file at' if current_lang == 'en' else 'Routenvideo: Datei ablegen unter') }} 
                     </video>
                 </div>
             </div>
